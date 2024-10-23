@@ -9,6 +9,7 @@ from Login import login_to_profile
 from Post import posts, Post
 
 browser = webdriver.Chrome()
+
 login_to_profile(browser,"https://dev.code.kupriyanov.space/", "ctrhtnysq.afqk@gmail.com", "Ro91684912")
 
 login_to_class(browser, 'test')
