@@ -50,26 +50,37 @@ def posts(browser, post):
 
     # Проверка соответсвия во вкладке "Перейти к полному тексту"
     try:
-        name = WebDriverWait(browser, 10).until(
+        nameInfo = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div[3]/div/div[2]/div[1]/h3"))
         ).get_attribute('innerHTML')
-        check(post.name, name, 'Post info')
+        check(post.name, nameInfo, 'Post.info.name')
 
         descriptionInfo = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div[3]/div/div[2]/div[2]/div"))
         ).get_attribute('innerHTML')
-        check(post.description, descriptionInfo, 'Post info')
+        check(post.description, descriptionInfo, 'Post.info.description')
 
         authorInfo = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div[3]/div/div[2]/div[3]"))
         )
         author_label = authorInfo.find_element(By.XPATH, ".//p[text()='Автор поста']").text
-        author_name = authorInfo.find_element(By.XPATH, ".//p[text()='test-admin']").text
-        check("Автор поста", author_label, 'Post info')
-        check(post.author, author_name, 'Post info')
+        author_name = authorInfo.find_element(By.XPATH, f".//p[text()='{post.author}']").text
+        check("Автор поста", author_label, 'Post.info.author')
+        check(post.author, author_name, 'Post.info.author')
 
-#Остался тест даты и выход
+        timeInfo = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div[3]/div/div[2]/div[4]"))
+        )
+        time_label = timeInfo.find_element(By.XPATH, ".//p[text()='Время публикации']").text
+        time_value = timeInfo.find_element(By.XPATH, f".//p[text()='{post.datetime}']").text
+        check("Время публикации", time_label, 'Post.info.datetime')
+        check(post.datetime, time_value, 'Post.info.datetime')
 
     except Exception as e:
         print(f"Ошибка: {e}")
         return
+
+    # Выход
+    WebDriverWait(browser, 10).until(
+        EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div[3]/div/div[2]/div[1]/div/button"))
+    ).click()
