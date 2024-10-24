@@ -15,6 +15,7 @@ class Post:
         self.datetime = datetime
 
 def posts(browser, post):
+    #Переход на вкладку "Посты"
     try:
         postButton = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[2]/div[2]/button[1]"))
@@ -24,6 +25,7 @@ def posts(browser, post):
         print("Ошибка: Кнопка поста не была найдена или не стала доступной.")
         return
 
+    # Поиск поста
     try:
         searchButton = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[2]/div[3]/div/div[1]/div/div[2]/div[1]/span/input"))
@@ -36,7 +38,8 @@ def posts(browser, post):
         print(f"Ошибка: Ошибка поиска поста. {e}")
         return
 
-    #Проверка соответсвия получаемого результата с исходным
+    # Проверка соответсвия получаемого результата с исходным
+    # Просмотр списка постов в классе
     try:
         description = browser.find_element(By.XPATH, "/html/body/div[1]/div/div[2]/div[3]/div/div[2]/div/div/div[2]/span").get_attribute('innerHTML')  # Получаем HTML-содержимое элемента
         datetime = browser.find_element(By.XPATH, "/html/body/div/div/div[2]/div[3]/div/div[2]/div/div/div[3]/p").get_attribute('innerHTML')
@@ -49,6 +52,7 @@ def posts(browser, post):
     postLinkName.click()
 
     # Проверка соответсвия во вкладке "Перейти к полному тексту"
+    # Детальный просмотр поста
     try:
         nameInfo = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div[3]/div/div[2]/div[1]/h3"))
