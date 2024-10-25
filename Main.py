@@ -20,15 +20,21 @@ login_to_class(browser, 'test')
                     'test-admin',
                     '10.09.2024 17:02:38'))'''
 
-tasks(browser, Module('Арифметика',
+'''tasks(browser, Module('Арифметика',
                       0,
                       6,
                       0,
                       126973,
                       Section(
                           'Новая секция 3',
+                          0,
+                          1,
+                          0,
+                          123,
                               Task(
                                   'Найти первые N простых чисел',
-                                  '123'))))
+                                  123))))'''
+
+script_making_a_solution_of_task(browser, Task('Найти первые N простых чисел', 0))
 
 input("Нажмите Enter, чтобы закрыть браузер...")
