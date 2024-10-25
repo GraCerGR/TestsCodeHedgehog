@@ -1,3 +1,5 @@
+from fileinput import close
+
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -35,10 +37,10 @@ def tasks(browser, module):
         taskButton.click()
     except Exception:
         print("Ошибка: Кнопка задач не была найдена или не стала доступной.")
-        return
+        return False
 
     search_by_task_name(browser, module.section)
-    viewing_statistics_in_the_module(browser, module)
+#    viewing_statistics_in_the_module(browser, module)
 
 
 # Поиск по названию задачи
@@ -58,7 +60,7 @@ def search_by_task_name(browser, section):
 
     except Exception as e:
         print(f"Ошибка: Ошибка поиска задачи. {e}")
-        return
+        return False
 
     try:
         WebDriverWait(browser, 10).until(
@@ -73,11 +75,28 @@ def search_by_task_name(browser, section):
     except TimeoutException or NoSuchElementException:
         print(
             f"Ошибка: Секция '{section.name}' с задачей '{section.task.name}' и очками '{section.task.points}' не была найдена или не стала доступной.")
-        return
+        return False
     except Exception as e:
         print(f"Ошибка: Ошибка поиска задачи. {e}")
-        return
+        return False
 
+    #нажатие на крестик
+    try:
+        closeButton = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((By.CLASS_NAME, 'ant-input-clear-icon'))
+        )
+        closeButton.click()
+    except Exception as e:
+        print(f"Ошибка: {e}")
+        return False
+
+    #Проверка, что поле поиска отчистилось
+    value = searchButton.get_attribute('value')
+    if value == '':
+        print("Поле поиска отчищено.")
+    else:
+        print("Ошибка: Поле поиско не отчищено")
+        return False
 
 # Просмотр статистики по количеству баллов и решённых задач в модуле
 def viewing_statistics_in_the_module(browser, module: Module):
@@ -85,10 +104,11 @@ def viewing_statistics_in_the_module(browser, module: Module):
         # Ожидание элемента с заданными значениями
         section_element = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((
-                By.XPATH, f"//div[contains(@class, 'ant-flex') and "
+                By.XPATH,
+                          f"//div[contains(@class, 'ant-flex') and "
                           f"p[text()='{module.name}'] and "
-                          f"following-sibling::div[contains(text(), '{module.taskCountCurrent}/{module.taskCountAll} задач')] and "
-                          f"following-sibling::div[contains(text(), '{module.pointCountCurrent}/{module.pointCountAll} баллов')]]"
+                          f"div[contains(text(), '{module.taskCountCurrent}/{module.taskCountAll} задач')] and "
+                          f"div[contains(text(), '{module.pointCountCurrent}/{module.pointCountAll} баллов')]]"
             ))
         )
         print("Модуль найден")
@@ -96,7 +116,7 @@ def viewing_statistics_in_the_module(browser, module: Module):
     except TimeoutException or NoSuchElementException:
         print(
             f"Ошибка: Модуль {module.name} с задачами {module.taskCountCurrent}/{module.taskCountAll} и баллами {module.pointCountCurrent}/{module.pointCountAll} не был найден или не стал доступной.")
-        return
+        return False
     except Exception as e:
         print(f"Ошибка: Ошибка поиска модуля. {e}")
-        return
+        return False
