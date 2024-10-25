@@ -8,6 +8,7 @@ from Class import *
 from Login import *
 from Post import *
 from Tasks import *
+from Queue import *
 
 browser = webdriver.Chrome()
 
@@ -35,6 +36,8 @@ login_to_class(browser, 'test')
                                   'Найти первые N простых чисел',
                                   123))))'''
 
-script_making_a_solution_of_task(browser, Task('Найти первые N простых чисел', 0))
+# script_making_a_solution_of_task(browser, Task('Найти первые N простых чисел', 0))
+
+queues(browser)
 
 input("Нажмите Enter, чтобы закрыть браузер...")

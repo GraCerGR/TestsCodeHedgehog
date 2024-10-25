@@ -55,7 +55,7 @@ def go_to_the_tasks_tab(browser):
 
 
 # Поиск по названию задачи
-def search_by_task_name(browser, section):
+async def search_by_task_name(browser, section):
     try:
         searchButton = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable(
@@ -110,7 +110,7 @@ def search_by_task_name(browser, section):
         return False
 
 # Просмотр статистики по количеству баллов и решённых задач в модуле
-def viewing_statistics_in_the_module(browser, module: Module):
+async def viewing_statistics_in_the_module(browser, module: Module):
     try:
         # Ожидание элемента с заданными значениями
         module_element = WebDriverWait(browser, 10).until(
@@ -133,7 +133,7 @@ def viewing_statistics_in_the_module(browser, module: Module):
         return False
 
 # Просмотр статистики по количеству баллов и решённых задач в секции
-def viewing_statistics_in_the_section(browser, section):
+async def viewing_statistics_in_the_section(browser, section):
     try:
         section_element = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((
@@ -227,6 +227,7 @@ def script_making_a_solution_of_task(browser, task):
             ))
         )
         SendSolutionButton.click()
+        print('Решение создано')
 
     except Exception as e:
         print(f'Ошибка: Ошибка отправки решения. {e}')
