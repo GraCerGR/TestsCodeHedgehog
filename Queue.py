@@ -1,6 +1,6 @@
 from fileinput import close
 
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException, InvalidSelectorException
 from selenium import webdriver
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
@@ -43,10 +43,11 @@ def displaying_a_page_with_no_solutions(browser):
 # Тест отображения очереди решений
 def displaying_a_page_with_solutions(browser):
     try:
-        elements = WebDriverWait(browser, 10).until(
-            EC.presence_of_all_elements_located((By.XPATH, "//div[contains(@class, 'ant-table-row') and contains(@class, 'ant-table-row-level-0')]"))
+        elements = WebDriverWait(browser, 20).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//tr[contains(@class, 'ant-table-row') and .//a[contains(@class, 'LinkRouter_link_router__UL4Jy QueueTable_cell_link__ZnHtE')]]"))
         )
-        print("Решения найдены")
+        count = len(elements)
+        print(f"Решения найдены: {count}")
 
     except NoSuchElementException or TimeoutException:
         print("Решения не найдены")
@@ -58,13 +59,22 @@ def displaying_a_page_with_solutions(browser):
     try:
         page_size_element = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((
-                By.XPATH,
-                "//div[@class='ant-select ant-select-outlined ant-pagination-options-size-changer css-14h5sa0 ant-select-single ant-select-show-arrow ant-select-show-search']//span[@class='ant-select-selection-item' and @title='50  / страница']")
+                By.CLASS_NAME,
+                "ant-select-selection-item"  # Это класс для элемента, который отображает выбранный размер страницы
             ))
+        )
 
-        # Получение текста элемента
         page_size_text = page_size_element.text
-        print("Количество страниц:", page_size_text)
+        page_size = int(page_size_text.split()[0])
+        print("Максимальное число элементов на странице:", page_size)
 
+        if count > page_size:
+            raise ValueError(f"На странице больше элементов чем {page_size}")
+
+    except InvalidSelectorException or TimeoutException as e:
+        print(f"Элемент не найден. {e}")
+        return False
     except Exception as e:
         print(f"Произошла ошибка: {e}")
+        return False
+
