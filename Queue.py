@@ -8,9 +8,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
-def queues(browser):
+def queues(browser, task_name):
     go_to_the_queue_tab(browser)
-    displaying_a_page_with_solutions(browser)
+
+    #displaying_a_page_with_solutions(browser)
+    going_to_the_task_details_when_clicking_on_the_task_name(browser, task_name)
 
 # Переход на вкладку "Очередь"
 def go_to_the_queue_tab(browser):
@@ -70,7 +72,42 @@ def displaying_a_page_with_solutions(browser):
 
         if count > page_size:
             raise ValueError(f"На странице больше элементов чем {page_size}")
+            return False
 
+        print("Очередь отображается")
+        return True
+    except InvalidSelectorException or TimeoutException as e:
+        print(f"Элемент не найден. {e}")
+        return False
+    except Exception as e:
+        print(f"Произошла ошибка: {e}")
+        return False
+
+
+# Обновление страницы без обновления окна браузера. Пока не заню как проверять
+# def updating_the_page_without_updating_browser(browser):
+
+# Переход на страницу деталей задачи при нажатии на название задачи в попытке
+def going_to_the_task_details_when_clicking_on_the_task_name(browser, task_name):
+    try:
+        taskLink = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((By.XPATH, f"//span[text()='{task_name}']"))
+        )
+        taskLink.click()
+
+    except InvalidSelectorException or TimeoutException as e:
+        print(f"Элемент не найден. {e}")
+        return False
+    except Exception as e:
+        print(f"Произошла ошибка: {e}")
+        return False
+
+    try:
+        taskTitle = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, f"//h2[text()='{task_name}']"))
+        )
+        print("Переход на страницу деталей выполнен")
+        return True
     except InvalidSelectorException or TimeoutException as e:
         print(f"Элемент не найден. {e}")
         return False
