@@ -3,6 +3,7 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import unittest
 
 from Class import *
 from Login import *
@@ -10,11 +11,24 @@ from Post import *
 from Tasks import *
 from Queue import *
 
-browser = webdriver.Chrome()
+class TestQueue(unittest.TestCase):
+    def setUp(self):
+        self.browser = webdriver.Chrome()
+        login_to_profile(self.browser,"https://dev.code.kupriyanov.space/", "ctrhtnysq.afqk@gmail.com", "Ro91684912")
+        login_to_class(self.browser, 'test')
 
-login_to_profile(browser,"https://dev.code.kupriyanov.space/", "ctrhtnysq.afqk@gmail.com", "Ro91684912")
+    def test_queues(self):
+        result = queues(self.browser, "Найти первые N простых чисел", "Student")
+        self.assertTrue(result, "Тест не пройден")
 
-login_to_class(browser, 'test')
+    def tearDown(self):
+        self.browser.quit()
+#browser = webdriver.Chrome()
+
+#login_to_profile(browser,"https://dev.code.kupriyanov.space/", "ctrhtnysq.afqk@gmail.com", "Ro91684912")
+
+#login_to_class(browser, 'test')
+
 
 '''posts(browser, Post('Тестовый пост',
                     '<p>Тест</p><p>Тест<br>Тесттесттесттесттесттесттест</p><p>РЕДАКТ</p>',
@@ -38,6 +52,8 @@ login_to_class(browser, 'test')
 
 # script_making_a_solution_of_task(browser, Task('Найти первые N простых чисел', 0))
 
-queues(browser, "Найти первые N простых чисел", "Student")
 
-input("Нажмите Enter, чтобы закрыть браузер...")
+
+#queues(browser, "Найти первые N простых чисел", "Student")
+
+#input("Нажмите Enter, чтобы закрыть браузер...")

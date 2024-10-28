@@ -11,10 +11,13 @@ import time
 
 
 def queues(browser, task_name, role):
-    go_to_the_queue_tab(browser)
-
-    displaying_a_page_with_solutions(browser, role)
-    # going_to_the_task_details_when_clicking_on_the_task_name(browser, task_name)
+    if not go_to_the_queue_tab(browser):
+        return False
+    if not displaying_a_page_with_solutions(browser, role):
+        return False
+    if not going_to_the_task_details_when_clicking_on_the_task_name(browser, task_name):
+        return False
+    return True  # Возвращаем True, если все проверки пройдены
 
 # Переход на вкладку "Очередь"
 def go_to_the_queue_tab(browser):
@@ -23,6 +26,7 @@ def go_to_the_queue_tab(browser):
             EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[2]/div[2]/button[3]"))
         )
         queueButton.click()
+        return True
     except Exception:
         print("Ошибка: Кнопка задач не была найдена или не стала доступной.")
         return False
