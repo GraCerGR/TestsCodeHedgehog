@@ -26,6 +26,7 @@ def go_to_the_queue_tab(browser):
             EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[2]/div[2]/button[3]"))
         )
         queueButton.click()
+        print("Переход на страницу 'Очередь' выполнен")
         return True
     except Exception:
         print("Ошибка: Кнопка задач не была найдена или не стала доступной.")

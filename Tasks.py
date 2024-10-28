@@ -34,13 +34,17 @@ class Module:
         self.section = section
 
 def tasks(browser, module):
-    # Переход на вкладку "Задачи"
-    go_to_the_tasks_tab(browser)
-
     # Тесты
-    search_by_task_name(browser, module.section)
-    viewing_statistics_in_the_module(browser, module)
-    viewing_statistics_in_the_section(browser, module.section)
+    # Переход на вкладку "Задачи"
+    if not go_to_the_tasks_tab(browser):
+        return False
+    if not search_by_task_name(browser, module.section):
+        return False
+    if not viewing_statistics_in_the_module(browser, module):
+        return False
+    if not viewing_statistics_in_the_section(browser, module.section):
+        return False
+    return True  # Возвращаем True, если все проверки пройдены
 
 # Переход на вкладку "Задачи"
 def go_to_the_tasks_tab(browser):
@@ -49,6 +53,8 @@ def go_to_the_tasks_tab(browser):
             EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[2]/div[2]/button[2]"))
         )
         taskButton.click()
+        print("Переход на страницу 'Задачи' выполнен")
+        return True
     except Exception:
         print("Ошибка: Кнопка задач не была найдена или не стала доступной.")
         return False
@@ -105,6 +111,7 @@ def search_by_task_name(browser, section):
     value = searchButton.get_attribute('value')
     if value == '':
         print("Поле поиска отчищено.")
+        return True
     else:
         print("Ошибка: Поле поиско не отчищено")
         return False
@@ -123,7 +130,7 @@ def viewing_statistics_in_the_module(browser, module: Module):
             ))
         )
         print("Модуль найден")
-
+        return True
     except TimeoutException or NoSuchElementException:
         print(
             f"Ошибка: Модуль {module.name} с задачами {module.taskCountCurrent}/{module.taskCountAll} и баллами {module.pointCountCurrent}/{module.pointCountAll} не был найден или не стал доступной.")
@@ -145,7 +152,7 @@ def viewing_statistics_in_the_section(browser, section):
                 ))
             )
         print("Секеция найдена")
-
+        return True
     except TimeoutException or NoSuchElementException:
         print(f"Ошибка: Секция {section.name} с задачами {section.taskCountCurrent}/{section.taskCountAll} и баллами {section.pointCountCurrent}/{section.pointCountAll} не была найдена или не стала доступной.")
         return False
