@@ -4,15 +4,17 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException,
 from selenium import webdriver
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
+from selenium.webdriver.ie.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
-def queues(browser, task_name):
+
+def queues(browser, task_name, role):
     go_to_the_queue_tab(browser)
 
-    #displaying_a_page_with_solutions(browser)
-    going_to_the_task_details_when_clicking_on_the_task_name(browser, task_name)
+    displaying_a_page_with_solutions(browser, role)
+    # going_to_the_task_details_when_clicking_on_the_task_name(browser, task_name)
 
 # Переход на вкладку "Очередь"
 def go_to_the_queue_tab(browser):
@@ -43,7 +45,7 @@ def displaying_a_page_with_no_solutions(browser):
 
 
 # Тест отображения очереди решений
-def displaying_a_page_with_solutions(browser):
+def displaying_a_page_with_solutions(browser, role):
     try:
         elements = WebDriverWait(browser, 20).until(
             EC.presence_of_all_elements_located((By.XPATH, "//tr[contains(@class, 'ant-table-row') and .//a[contains(@class, 'LinkRouter_link_router__UL4Jy QueueTable_cell_link__ZnHtE')]]"))
@@ -57,6 +59,23 @@ def displaying_a_page_with_solutions(browser):
     except Exception as e:
         print(f"Произошла ошибка: {e}")
         return False
+
+    if (role == "Student"):
+        userNameClass = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "UserSection_user_section__Y45e8"))
+        )
+        username_element = userNameClass.find_element(By.XPATH, ".//p[contains(@class, 'Paragraph_paragraph__vZceR')]")
+        username = username_element.text
+
+        for element in elements:
+            try:
+                cell = element.find_element(By.XPATH,
+                                            f".//span[contains(@class, 'Paragraph_paragraph__vZceR') and text()='{username}']")
+                print("Найден элемент с автором:", cell.text)
+            except Exception as e:
+                # Если элемент не найден, можно игнорировать или обработать ошибку
+                print(f"Элемент не пренадлежит студенту {username}:", e)
+                return False
 
     try:
         page_size_element = WebDriverWait(browser, 10).until(

@@ -55,7 +55,7 @@ def go_to_the_tasks_tab(browser):
 
 
 # Поиск по названию задачи
-async def search_by_task_name(browser, section):
+def search_by_task_name(browser, section):
     try:
         searchButton = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable(
@@ -110,7 +110,7 @@ async def search_by_task_name(browser, section):
         return False
 
 # Просмотр статистики по количеству баллов и решённых задач в модуле
-async def viewing_statistics_in_the_module(browser, module: Module):
+def viewing_statistics_in_the_module(browser, module: Module):
     try:
         # Ожидание элемента с заданными значениями
         module_element = WebDriverWait(browser, 10).until(
@@ -133,7 +133,7 @@ async def viewing_statistics_in_the_module(browser, module: Module):
         return False
 
 # Просмотр статистики по количеству баллов и решённых задач в секции
-async def viewing_statistics_in_the_section(browser, section):
+def viewing_statistics_in_the_section(browser, section):
     try:
         section_element = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((

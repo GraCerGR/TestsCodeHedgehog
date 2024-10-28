@@ -34,6 +34,7 @@ def posts(browser, post):
         postLinkName = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable((By.XPATH, f"//button[contains(@class, 'ButtonNonUi_button_non_ui__Mn9Zr') and h3[text()='{post.name}']]"))
         )
+        print(f"Пост {post.name} найден")
     except Exception as e:
         print(f"Ошибка: Ошибка поиска поста. {e}")
         return
@@ -88,3 +89,5 @@ def posts(browser, post):
     WebDriverWait(browser, 10).until(
         EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div[3]/div/div[2]/div[1]/div/button"))
     ).click()
+
+    return browser

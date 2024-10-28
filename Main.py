@@ -38,6 +38,6 @@ login_to_class(browser, 'test')
 
 # script_making_a_solution_of_task(browser, Task('Найти первые N простых чисел', 0))
 
-queues(browser, "Найти первые N простых чисел")
+queues(browser, "Найти первые N простых чисел", "Student")
 
 input("Нажмите Enter, чтобы закрыть браузер...")
