@@ -7,13 +7,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from Exeptions import *
 
-import sys
-
 def queues(browser, task_name, role):
     printInfo(f"Начало теста вкладки queues")
     if not go_to_the_queue_tab(browser):
         return False
     if not displaying_a_page_with_solutions(browser, role):
+        return False
+    if not updating_the_page_without_updating_browser(browser):
         return False
     if not going_to_the_task_details_when_clicking_on_the_task_name(browser, task_name):
         return False
@@ -111,7 +111,95 @@ def displaying_a_page_with_solutions(browser, role):
 
 
 # Обновление страницы без обновления окна браузера. Пока не заню как проверять
-# def updating_the_page_without_updating_browser(browser):
+def updating_the_page_without_updating_browser(browser):
+    try:
+        rows = WebDriverWait(browser, 20).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//tr[contains(@class, 'ant-table-row')]"))
+        )
+        count = len(rows)
+        printInfo(f"Решения найдены: {count}")
+
+    except TimeoutException or NoSuchElementException:
+        printExeption(f"Решения не найдены")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    try:
+        fourth_cell_values = []
+        for row in rows:
+            # Находим четвертую ячейку
+            fourth_cell = row.find_elements(By.TAG_NAME, "td")[3]
+            cell_text = fourth_cell.text
+            fourth_cell_values.append(cell_text)
+
+    except TimeoutException or NoSuchElementException:
+        printExeption(f"Ячейка с датой не найдена")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+# ----------- Поиск кнопки обновления -----------
+    try:
+        WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc') and span[text()='Обновить страницу']]"))
+        ).click()
+
+    except TimeoutException or NoSuchElementException:
+        printExeption(f"Кнопка обновления не найдена")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+#----------- Повторный поиск -----------
+    try:
+        WebDriverWait(browser, 20).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//tr[contains(@class, 'ant-table-row') and .//a[contains(@class, 'LinkRouter_link_router__UL4Jy QueueTable_cell_link__ZnHtE')]]"))
+        ) # Это нужно, чтобы дождаться загрузки таблицы
+        rows_new = WebDriverWait(browser, 20).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//tr[contains(@class, 'ant-table-row')]"))
+        )
+        count_new = len(rows_new)
+        printInfo(f"Обновлённые решения найдены: {count_new}")
+
+    except TimeoutException or NoSuchElementException:
+        printExeption(f"Обновлённые решения не найдены")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+# ----------- Проверка соответствия дат -----------
+    try:
+        if (count_new != count):
+            printExeption(f"Число элементов не совпадает ({count_new}, {count})")
+            return False
+        for i, row in enumerate(rows_new):
+
+            try:
+                cell = row.find_element(By.XPATH,
+                                            f".//span[contains(@class, 'Paragraph_paragraph__vZceR') and text()='{fourth_cell_values[i]}']")
+                printInfo(f"Найден элемент с датой: {cell.text}")
+            except Exception:
+                printExeption(f"Элемент с датой {fourth_cell_values[i]} не найден")
+                return False
+        printInfo(f"Обновление страницы прошло успешно")
+        return True
+    except TimeoutException or NoSuchElementException:
+        printExeption(f"Ячейка с датой не найдена")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
 
 # Переход на страницу деталей задачи при нажатии на название задачи в попытке
 def going_to_the_task_details_when_clicking_on_the_task_name(browser, task_name):
@@ -134,7 +222,6 @@ def going_to_the_task_details_when_clicking_on_the_task_name(browser, task_name)
             EC.presence_of_element_located((By.XPATH, f"//h2[text()='{task_name}']"))
         )
         printInfo(f"Переход на страницу деталей выполнен")
-        return True
     except TimeoutException or NoSuchElementException:
         printExeption(f"Элемент '{task_name}' не найден.")
         return False
@@ -143,3 +230,18 @@ def going_to_the_task_details_when_clicking_on_the_task_name(browser, task_name)
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Сообщение ошибки: {e}")
 
+    try:
+        back_button = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((
+                By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc') and span[text()='Назад']]"
+            ))
+        )
+        back_button.click()
+        return True
+    except TimeoutException or NoSuchElementException:
+        printExeption(f"Элемент 'Назад' не найден.")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Выход из деталей задачи не выполнен: {e}")
