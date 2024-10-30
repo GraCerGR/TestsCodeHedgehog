@@ -22,7 +22,7 @@ def posts(browser, post):
         )
         postButton.click()
     except Exception:
-        print("Ошибка: Кнопка поста не была найдена или не стала доступной.")
+        printExeption("Ошибка: Кнопка поста не была найдена или не стала доступной.")
         return
 
     # Поиск поста
@@ -36,7 +36,7 @@ def posts(browser, post):
         )
         print(f"Пост {post.name} найден")
     except Exception as e:
-        print(f"Ошибка: Ошибка поиска поста. {e}")
+        printExeption(f"Ошибка: Ошибка поиска поста. {e}")
         return
 
     # Проверка соответсвия получаемого результата с исходным
@@ -48,7 +48,7 @@ def posts(browser, post):
         check(post.description, description, 'Post')
         check(f"{post.author}, {post.datetime}", datetime, 'Post')
     except Exception as e:
-        print(f"Ошибка: {e}")
+        printExeption(f"Ошибка: {e}")
         return
     postLinkName.click()
 
@@ -82,7 +82,7 @@ def posts(browser, post):
         check(post.datetime, time_value, 'Post.info.datetime')
 
     except Exception as e:
-        print(f"Ошибка: {e}")
+        printExeption(f"Ошибка: {e}")
         return
 
     # Выход

@@ -1,3 +1,4 @@
+import logging
 from selenium import webdriver
 import time
 from selenium.webdriver.common.by import By
@@ -12,12 +13,13 @@ from Post import *
 from Tasks import *
 from Queue import *
 
-class TestQueue(unittest.TestCase):
+class Test(unittest.TestCase):
+
     def setUp(self):
         self.browser = webdriver.Chrome()
         login_to_profile(self.browser,SITELINK, USERNAME, PASSWORD)
         login_to_class(self.browser, 'test')
-
+        logging.basicConfig(level=logging.INFO)
     def test_posts(self):
         result = posts(self.browser, Post('Тестовый пост',
                     '<p>Тест</p><p>Тест<br>Тесттесттесттесттесттесттест</p><p>РЕДАКТ</p>',
