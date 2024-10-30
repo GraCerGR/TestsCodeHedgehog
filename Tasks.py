@@ -35,7 +35,7 @@ class Module:
 
 def tasks(browser, module):
     # Тесты
-    print(f"[{sys._getframe().f_code.co_name}]  Начало теста вкладки tasks")
+    printInfo(f"Начало теста вкладки tasks")
     # Переход на вкладку "Задачи"
     if not go_to_the_tasks_tab(browser):
         return False
@@ -54,11 +54,11 @@ def go_to_the_tasks_tab(browser):
             EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[2]/div[2]/button[2]"))
         )
         taskButton.click()
-        print(f"[{sys._getframe().f_code.co_name}] Переход на страницу 'Задачи' выполнен")
+        printInfo(f"Переход на страницу 'Задачи' выполнен")
         return True
-    except Exception:
-        printExeption(f"[{sys._getframe().f_code.co_name}] Тип ошибки: {type(e).__name__}")
-        printExeption(f"[{sys._getframe().f_code.co_name}] Ошибка: Кнопка задач не была найдена или не стала доступной.")
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Кнопка задач не была найдена или не стала доступной.")
         return False
 
 
@@ -78,8 +78,8 @@ def search_by_task_name(browser, section):
             time.sleep(0.1)
 
     except Exception as e:
-        printExeption(f"[{sys._getframe().f_code.co_name}] Тип ошибки: {type(e).__name__}")
-        printExeption(f"[{sys._getframe().f_code.co_name}] Ошибка: Ошибка поиска задачи. {e}")
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
         return False
 
     try:
@@ -90,15 +90,15 @@ def search_by_task_name(browser, section):
                            f".//following::p[text()='{section.task.name}'] and "
                            f".//following::p[text()='{section.task.points}']]"))
         )
-        print(f"[{sys._getframe().f_code.co_name}] Задача найдена")
+        printInfo(f"Задача найдена")
 
     except TimeoutException or NoSuchElementException:
         printExeption(
-            f"[{sys._getframe().f_code.co_name}] Ошибка: Секция '{section.name}' с задачей '{section.task.name}' и очками '{section.task.points}' не была найдена или не стала доступной.")
+            f"Ошибка: Секция '{section.name}' с задачей '{section.task.name}' и очками '{section.task.points}' не была найдена или не стала доступной.")
         return False
     except Exception as e:
-        printExeption(f"[{sys._getframe().f_code.co_name}] Тип ошибки: {type(e).__name__}")
-        printExeption(f"[{sys._getframe().f_code.co_name}] Ошибка: Ошибка поиска задачи. {e}")
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
         return False
 
     #нажатие на крестик
@@ -108,17 +108,17 @@ def search_by_task_name(browser, section):
         )
         closeButton.click()
     except Exception as e:
-        printExeption(f"[{sys._getframe().f_code.co_name}] Тип ошибки: {type(e).__name__}")
-        printExeption(f"[{sys._getframe().f_code.co_name}] Ошибка: {e}")
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
         return False
 
     #Проверка, что поле поиска отчистилось
     value = searchButton.get_attribute('value')
     if value == '':
-        print(f"[{sys._getframe().f_code.co_name}] Поле поиска отчищено.")
+        printInfo(f"Поле поиска отчищено.")
         return True
     else:
-        print(f"[{sys._getframe().f_code.co_name}] Ошибка: Поле поиска не отчищено")
+        printInfo(f"Ошибка: Поле поиска не отчищено")
         return False
 
 # Просмотр статистики по количеству баллов и решённых задач в модуле
@@ -134,15 +134,15 @@ def viewing_statistics_in_the_module(browser, module: Module):
                           f"div[contains(text(), '{module.pointCountCurrent}/{module.pointCountAll} баллов')]]"
             ))
         )
-        print(f"[{sys._getframe().f_code.co_name}] Модуль найден")
+        printInfo(f"Модуль найден")
         return True
     except TimeoutException or NoSuchElementException:
         printExeption(
-            f"[{sys._getframe().f_code.co_name}] Ошибка: Модуль {module.name} с задачами {module.taskCountCurrent}/{module.taskCountAll} и баллами {module.pointCountCurrent}/{module.pointCountAll} не был найден или не стал доступной.")
+            f"Ошибка: Модуль {module.name} с задачами {module.taskCountCurrent}/{module.taskCountAll} и баллами {module.pointCountCurrent}/{module.pointCountAll} не был найден или не стал доступной.")
         return False
     except Exception as e:
-        printExeption(f"[{sys._getframe().f_code.co_name}] Тип ошибки: {type(e).__name__}")
-        printExeption(f"[{sys._getframe().f_code.co_name}] Ошибка: Ошибка поиска модуля. {e}")
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска модуля. {e}")
         return False
 
 # Просмотр статистики по количеству баллов и решённых задач в секции
@@ -157,13 +157,13 @@ def viewing_statistics_in_the_section(browser, section):
                         f"div[contains(text(), '{section.pointCountCurrent}/{section.pointCountAll} баллов')]]"
                 ))
             )
-        print(f"[{sys._getframe().f_code.co_name}] Секеция найдена")
+        printInfo(f"Секеция найдена")
         return True
     except TimeoutException or NoSuchElementException:
-        printExeption(f"[{sys._getframe().f_code.co_name}] Ошибка: Секция {section.name} с задачами {section.taskCountCurrent}/{section.taskCountAll} и баллами {section.pointCountCurrent}/{section.pointCountAll} не была найдена или не стала доступной.")
+        printExeption(f"Ошибка: Секция {section.name} с задачами {section.taskCountCurrent}/{section.taskCountAll} и баллами {section.pointCountCurrent}/{section.pointCountAll} не была найдена или не стала доступной.")
         return False
     except Exception as e:
-        printExeption(f"[{sys._getframe().f_code.co_name}] Тип ошибки: {type(e).__name__}")
+        printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Ошибка: Ошибка поиска секции. {e}")
         return False
 
@@ -193,8 +193,8 @@ def script_making_a_solution_of_task(browser, task):
             time.sleep(0.1)
 
     except Exception as e:
-        print(f"[{sys._getframe().f_code.co_name}] Тип ошибки: {type(e).__name__}")
-        print(f"[{sys._getframe().f_code.co_name}] Ошибка: Ошибка поиска задачи. {e}")
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
         return False
 
 # Вход в описание задачи
@@ -207,11 +207,11 @@ def script_making_a_solution_of_task(browser, task):
 
     except TimeoutException or NoSuchElementException:
         printExeption(
-            f"[{sys._getframe().f_code.co_name}] Ошибка: Задача '{task.name}' не была найдена или не стала доступной.")
+            f"Ошибка: Задача '{task.name}' не была найдена или не стала доступной.")
         return False
     except Exception as e:
-        printExeption(f"[{sys._getframe().f_code.co_name}] Тип ошибки: {type(e).__name__}")
-        printExeption(f"[{sys._getframe().f_code.co_name}] Ошибка: Ошибка поиска задачи. {e}")
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
         return False
 
 # Нажатие "Отправить"
@@ -223,8 +223,8 @@ def script_making_a_solution_of_task(browser, task):
         )
         sendButton.click()
     except Exception as e:
-        printExeption(f"[{sys._getframe().f_code.co_name}] Тип ошибки: {type(e).__name__}")
-        printExeption(f"[{sys._getframe().f_code.co_name}] Ошибка: Ошибка поиска кнопки 'Отправить'. {e}")
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска кнопки 'Отправить'. {e}")
         return False
 
     try:
@@ -244,9 +244,9 @@ def script_making_a_solution_of_task(browser, task):
             ))
         )
         SendSolutionButton.click()
-        print(f"[{sys._getframe().f_code.co_name}] Решение создано")
+        printInfo(f"Решение создано")
 
     except Exception as e:
-        printExeption(f"[{sys._getframe().f_code.co_name}] Тип ошибки: {type(e).__name__}")
-        printExeption(f"[{sys._getframe().f_code.co_name}] Ошибка: Ошибка отправки решения. {e}")
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка отправки решения. {e}")
         return False
