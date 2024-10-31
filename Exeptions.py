@@ -22,3 +22,6 @@ def printExeption(text: str):
 
 def printInfo(text: str):
     print(f"[{get_caller_function_name()}] {text}")
+
+def printSuccess(text: str):
+    print(f"{"\033[32m"}[{get_caller_function_name()}] {text}{"\033[0m"}")

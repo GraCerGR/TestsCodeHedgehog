@@ -1,4 +1,6 @@
 from fileinput import close
+from importlib.metadata import files
+from time import sleep
 
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium import webdriver
@@ -54,7 +56,7 @@ def go_to_the_tasks_tab(browser):
             EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[2]/div[2]/button[2]"))
         )
         taskButton.click()
-        printInfo(f"Переход на страницу 'Задачи' выполнен")
+        printSuccess(f"Переход на страницу 'Задачи' выполнен")
         return True
     except Exception as e:
         printExeption(f"Тип ошибки: {type(e).__name__}")
@@ -92,7 +94,7 @@ def search_by_task_name(browser, section):
         )
         printInfo(f"Задача найдена")
 
-    except TimeoutException or NoSuchElementException:
+    except (TimeoutException, NoSuchElementException):
         printExeption(
             f"Ошибка: Секция '{section.name}' с задачей '{section.task.name}' и очками '{section.task.points}' не была найдена или не стала доступной.")
         return False
@@ -115,7 +117,7 @@ def search_by_task_name(browser, section):
     #Проверка, что поле поиска отчистилось
     value = searchButton.get_attribute('value')
     if value == '':
-        printInfo(f"Поле поиска отчищено.")
+        printSuccess(f"Поиск работает.")
         return True
     else:
         printInfo(f"Ошибка: Поле поиска не отчищено")
@@ -134,9 +136,9 @@ def viewing_statistics_in_the_module(browser, module: Module):
                           f"div[contains(text(), '{module.pointCountCurrent}/{module.pointCountAll} баллов')]]"
             ))
         )
-        printInfo(f"Модуль найден")
+        printSuccess(f"Модуль найден")
         return True
-    except TimeoutException or NoSuchElementException:
+    except (TimeoutException, NoSuchElementException):
         printExeption(
             f"Ошибка: Модуль {module.name} с задачами {module.taskCountCurrent}/{module.taskCountAll} и баллами {module.pointCountCurrent}/{module.pointCountAll} не был найден или не стал доступной.")
         return False
@@ -157,9 +159,9 @@ def viewing_statistics_in_the_section(browser, section):
                         f"div[contains(text(), '{section.pointCountCurrent}/{section.pointCountAll} баллов')]]"
                 ))
             )
-        printInfo(f"Секеция найдена")
+        printSuccess(f"Секеция найдена")
         return True
-    except TimeoutException or NoSuchElementException:
+    except (TimeoutException, NoSuchElementException):
         printExeption(f"Ошибка: Секция {section.name} с задачами {section.taskCountCurrent}/{section.taskCountAll} и баллами {section.pointCountCurrent}/{section.pointCountAll} не была найдена или не стала доступной.")
         return False
     except Exception as e:
@@ -171,6 +173,86 @@ def viewing_statistics_in_the_section(browser, section):
 # На фронте пока не реализовано
 
 # Настройка фильтрации
+def set_filter(browser, filters: list, task: Task):
+    go_to_the_tasks_tab(browser)
+    try:
+        filter_button = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((
+                By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc') and span[text()='Фильтрации']]"
+            ))
+        )
+        filter_button.click()
+        printInfo(f"Кнопка Фильтрации найдена")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Элемент 'Фильтрация' не найден.")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+# ----------------------- Поиск нужного фильтра -----------------------
+    try:
+        sleep(1)
+        filtering_section = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/div"))
+        )
+        filtering_section.find_element(By.XPATH, "//h3[text()='Фильтрации']")
+        printInfo(f"Окно фильтрации найдено")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Окно 'Фильтрации' не найдено.")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    # Перебор списка фильтров
+    for filter in filters:
+        try:
+            filtering_section.find_element(By.XPATH, f".//p[text()='{filter}' and contains(@class, 'Paragraph_paragraph__vZceR')]").click()
+            printInfo(f"Фильтр '{filter}' найден")
+        except (TimeoutException, NoSuchElementException):
+            printExeption(f"Фильтр '{filter}' не найден.")
+            return False
+        except Exception as e:
+            printExeption(f"Тип ошибки: {type(e).__name__}")
+            printExeption(f"Сообщение ошибки: {e}")
+            return False
+
+    try:
+        WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, f"//tbody[contains(@class, 'ant-table-tbody') and "
+                           f".//p[text()='{task.name}'] and "
+                           f".//following::p[text()='{task.points}']]"))
+        )
+        printInfo(f"Задача '{task.name}' найдена")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(
+            f"Ошибка: Задача '{task.name}' с очками '{task.points}' и фильтром '{filter}' не была найдена или не стала доступной.")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+
+    try:
+        for filter in filters:
+            filtering_section.find_element(By.XPATH,f".//p[text()='{filter}' and contains(@class, 'Paragraph_paragraph__vZceR')]").click()
+        filter_button.click()
+        filters_string = ", ".join(filters)
+        printSuccess(f"Фильтр {filters_string} работает")
+        return True
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Кнопка скрытия фильтрации или отключения фильтра не найдена")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+
 # Задачи по умолчанию пока +- одинаковые (нерешены, без попыток).
 # Если какое-то решение отправить, то будет Ожидает вердикта, после Отклонено (компилятор не работает)
 # Чтобы протестировать фильтрацию, нужно иметь предсозданные задачи со своими вердиктами тестирования и постмодерации.
@@ -205,7 +287,7 @@ def script_making_a_solution_of_task(browser, task):
         )
         taskButton.click()
 
-    except TimeoutException or NoSuchElementException:
+    except (TimeoutException, NoSuchElementException):
         printExeption(
             f"Ошибка: Задача '{task.name}' не была найдена или не стала доступной.")
         return False
@@ -244,7 +326,7 @@ def script_making_a_solution_of_task(browser, task):
             ))
         )
         SendSolutionButton.click()
-        printInfo(f"Решение создано")
+        printSuccess(f"Решение создано")
 
     except Exception as e:
         printExeption(f"Тип ошибки: {type(e).__name__}")

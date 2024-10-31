@@ -26,7 +26,7 @@ def go_to_the_queue_tab(browser):
             EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[2]/div[2]/button[3]"))
         )
         queueButton.click()
-        printInfo(f"Переход на страницу 'Очередь' выполнен")
+        printSuccess(f"Переход на страницу 'Очередь' выполнен")
         return True
     except Exception:
         printExeption(f"Ошибка: Кнопка задач не была найдена или не стала доступной.")
@@ -39,9 +39,9 @@ def displaying_a_page_with_no_solutions(browser):
             EC.presence_of_element_located((By.XPATH,
                                             "//td[contains(@class, 'ant-table-cell')]//p[contains(text(), 'Кажется, здесь пока нет данных')]"))
         )
-        printInfo(f"Элемент с сообщением об отсутствии данных найден.")
+        printSuccess(f"Элемент с сообщением об отсутствии данных найден.")
         return True
-    except TimeoutException or NoSuchElementException:
+    except (TimeoutException, NoSuchElementException):
         printExeption(f"Элемент с сообщением об отсутствии данных не найден.")
         return False
     except Exception as e:
@@ -59,7 +59,7 @@ def displaying_a_page_with_solutions(browser, role):
         count = len(elements)
         printInfo(f"Решения найдены: {count}")
 
-    except TimeoutException or NoSuchElementException:
+    except (TimeoutException, NoSuchElementException):
         printExeption(f"Решения не найдены")
         return False
     except Exception as e:
@@ -99,9 +99,9 @@ def displaying_a_page_with_solutions(browser, role):
             raise ValueError(f"На странице больше элементов чем {page_size}")
             return False
 
-        printInfo(f"Очередь отображается")
+        printSuccess(f"Очередь отображается")
         return True
-    except TimeoutException or NoSuchElementException:
+    except (TimeoutException, NoSuchElementException):
         printExeption(f"Элемент не найден. {e}")
         return False
     except Exception as e:
@@ -119,7 +119,7 @@ def updating_the_page_without_updating_browser(browser):
         count = len(rows)
         printInfo(f"Решения найдены: {count}")
 
-    except TimeoutException or NoSuchElementException:
+    except (TimeoutException, NoSuchElementException):
         printExeption(f"Решения не найдены")
         return False
     except Exception as e:
@@ -135,7 +135,7 @@ def updating_the_page_without_updating_browser(browser):
             cell_text = fourth_cell.text
             fourth_cell_values.append(cell_text)
 
-    except TimeoutException or NoSuchElementException:
+    except (TimeoutException, NoSuchElementException):
         printExeption(f"Ячейка с датой не найдена")
         return False
     except Exception as e:
@@ -149,7 +149,7 @@ def updating_the_page_without_updating_browser(browser):
             EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc') and span[text()='Обновить страницу']]"))
         ).click()
 
-    except TimeoutException or NoSuchElementException:
+    except (TimeoutException, NoSuchElementException):
         printExeption(f"Кнопка обновления не найдена")
         return False
     except Exception as e:
@@ -168,7 +168,7 @@ def updating_the_page_without_updating_browser(browser):
         count_new = len(rows_new)
         printInfo(f"Обновлённые решения найдены: {count_new}")
 
-    except TimeoutException or NoSuchElementException:
+    except (TimeoutException, NoSuchElementException):
         printExeption(f"Обновлённые решения не найдены")
         return False
     except Exception as e:
@@ -190,9 +190,9 @@ def updating_the_page_without_updating_browser(browser):
             except Exception:
                 printExeption(f"Элемент с датой {fourth_cell_values[i]} не найден")
                 return False
-        printInfo(f"Обновление страницы прошло успешно")
+        printSuccess(f"Обновление страницы прошло успешно")
         return True
-    except TimeoutException or NoSuchElementException:
+    except (TimeoutException, NoSuchElementException):
         printExeption(f"Ячейка с датой не найдена")
         return False
     except Exception as e:
@@ -209,7 +209,7 @@ def going_to_the_task_details_when_clicking_on_the_task_name(browser, task_name)
         )
         taskLink.click()
 
-    except TimeoutException or NoSuchElementException:
+    except (TimeoutException, NoSuchElementException):
         printExeption(f"Элемент '{task_name}' не найден.")
         return False
     except Exception as e:
@@ -221,8 +221,8 @@ def going_to_the_task_details_when_clicking_on_the_task_name(browser, task_name)
         taskTitle = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.XPATH, f"//h2[text()='{task_name}']"))
         )
-        printInfo(f"Переход на страницу деталей выполнен")
-    except TimeoutException or NoSuchElementException:
+        printSuccess(f"Переход на страницу деталей выполнен")
+    except (TimeoutException, NoSuchElementException):
         printExeption(f"Элемент '{task_name}' не найден.")
         return False
     except Exception as e:
@@ -238,7 +238,7 @@ def going_to_the_task_details_when_clicking_on_the_task_name(browser, task_name)
         )
         back_button.click()
         return True
-    except TimeoutException or NoSuchElementException:
+    except (TimeoutException, NoSuchElementException):
         printExeption(f"Элемент 'Назад' не найден.")
         return False
     except Exception as e:
