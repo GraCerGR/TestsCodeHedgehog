@@ -118,6 +118,7 @@ def search_by_task_name(browser, section):
     value = searchButton.get_attribute('value')
     if value == '':
         printSuccess(f"Поиск работает.")
+        sleep(3)
         return True
     else:
         printInfo(f"Ошибка: Поле поиска не отчищено")
@@ -251,12 +252,6 @@ def set_filter(browser, filters: list, task: Task):
         # Выводим тип ошибки и сообщение
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Сообщение ошибки: {e}")
-
-
-# Задачи по умолчанию пока +- одинаковые (нерешены, без попыток).
-# Если какое-то решение отправить, то будет Ожидает вердикта, после Отклонено (компилятор не работает)
-# Чтобы протестировать фильтрацию, нужно иметь предсозданные задачи со своими вердиктами тестирования и постмодерации.
-# Автоматизировать это долго и пока не известно, есть ли смысл вообще это делать, поэтому пока не буду.
 
 
 def script_making_a_solution_of_task(browser, task):

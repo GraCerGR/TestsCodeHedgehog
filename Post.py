@@ -90,4 +90,4 @@ def posts(browser, post):
         EC.element_to_be_clickable((By.XPATH, "/html/body/div[2]/div/div[3]/div/div[2]/div[1]/div/button"))
     ).click()
 
-    return browser
+    return True
