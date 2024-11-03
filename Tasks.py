@@ -174,7 +174,7 @@ def viewing_statistics_in_the_section(browser, section):
 # На фронте пока не реализовано
 
 # Настройка фильтрации
-def set_filter(browser, filters: list, task: Task):
+def set_t_filter(browser, filters: list, task: Task):
     go_to_the_tasks_tab(browser)
     try:
         filter_button = WebDriverWait(browser, 10).until(
@@ -213,6 +213,7 @@ def set_filter(browser, filters: list, task: Task):
         try:
             filtering_section.find_element(By.XPATH, f".//p[text()='{filter}' and contains(@class, 'Paragraph_paragraph__vZceR')]").click()
             printInfo(f"Фильтр '{filter}' найден")
+            sleep(1)
         except (TimeoutException, NoSuchElementException):
             printExeption(f"Фильтр '{filter}' не найден.")
             return False

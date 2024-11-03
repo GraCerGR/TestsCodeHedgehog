@@ -566,3 +566,87 @@ def displaying_the_page_with_details(browser, task_name):
     else:
         printInfo(f"Ошибка: Поле поиска не отчищено")
         return False
+
+
+# Настройка фильтрации
+def set_q_filter(browser, filters: list, task_name):
+    go_to_the_queue_tab(browser)
+    try:
+        filter_button = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((
+                By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc') and span[text()='Фильтрации']]"
+            ))
+        )
+        filter_button.click()
+        printInfo(f"Кнопка Фильтрации найдена")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Элемент 'Фильтрация' не найден.")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    # ----------------------- Поиск нужного фильтра -----------------------
+    try:
+        sleep(1)
+        filtering_section = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/div"))
+        )
+        filtering_section.find_element(By.XPATH, "//h3[text()='Фильтрации']")
+        printInfo(f"Окно фильтрации найдено")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Окно 'Фильтрации' не найдено.")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    # Перебор списка фильтров
+    for filter in filters:
+        try:
+            filtering_section.find_element(By.XPATH,
+                                           f".//p[text()='{filter}' and contains(@class, 'Paragraph_paragraph__vZceR')]").click()
+            sleep(1)
+            printInfo(f"Фильтр '{filter}' найден")
+        except (TimeoutException, NoSuchElementException):
+            printExeption(f"Фильтр '{filter}' не найден.")
+            return False
+        except Exception as e:
+            printExeption(f"Тип ошибки: {type(e).__name__}")
+            printExeption(f"Сообщение ошибки: {e}")
+            return False
+
+    try:
+        WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, f"//tbody[contains(@class, 'ant-table-tbody') and "
+                           f".//span[text()='{task_name}']]"))
+        )
+        printInfo(f"Задача '{task_name}' найдена")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(
+            f"Ошибка: Задача '{task_name}' c фильтром '{filter}' не была найдена или не стала доступной.")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+
+    try:
+        for i in range(len(filters) - 1, -1, -1):
+            filter = filters[i]
+            filtering_section.find_element(By.XPATH,
+                                           f".//p[text()='{filter}' and contains(@class, 'Paragraph_paragraph__vZceR')]").click()
+        filter_button.click()
+        filters_string = ", ".join(filters)
+        printSuccess(f"Фильтр {filters_string} работает")
+        return True
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Кнопка скрытия фильтрации или отключения фильтра не найдена")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")

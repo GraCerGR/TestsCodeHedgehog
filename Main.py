@@ -45,15 +45,22 @@ class Test(unittest.TestCase):
         self.assertTrue(result, "Тест не пройден")
 
     def test_tasks_filters(self):
-        filter1 = set_filter(self.browser, ['Compilation Error'], Task('Найти первые N простых чисел', 123))
-        filter2 = set_filter(self.browser, ['Отклонено'], Task('Найти первые N простых чисел', 123))
-        filter3 = set_filter(self.browser, ['Ожидание вердикта'], Task('2131', 94151))
-        filter4 = set_filter(self.browser, ['Отклонено', 'Compilation Error'], Task('Найти первые N простых чисел', 123))
+        filter1 = set_t_filter(self.browser, ['Compilation Error'], Task('Найти первые N простых чисел', 123))
+        filter2 = set_t_filter(self.browser, ['Отклонено'], Task('Найти первые N простых чисел', 123))
+        filter3 = set_t_filter(self.browser, ['Ожидание вердикта'], Task('2131', 94151))
+        filter4 = set_t_filter(self.browser, ['Отклонено', 'Compilation Error'], Task('Найти первые N простых чисел', 123))
         self.assertTrue(filter1 and filter2 and filter3 and filter4, "Тест не пройден")
 
     def test_queues(self):
         result = queues(self.browser, "Найти первые N простых чисел", "Student")
         self.assertTrue(result, "Тест не пройден")
+
+    def test_queue_filters(self):
+        filter1 = set_q_filter(self.browser, ['Compilation Error'], 'Найти первые N простых чисел')
+        filter2 = set_q_filter(self.browser, ['C++'], 'Найти первые N простых чисел')
+        filter3 = set_q_filter(self.browser, ['Check Failed'], '2131')
+        filter4 = set_q_filter(self.browser, ['Арифметика', '42135'], '2131')
+        self.assertTrue(filter1 and filter2 and filter3, "Тест не пройден")
 
     def tearDown(self):
         self.browser.quit()
