@@ -132,7 +132,7 @@ def displaying_a_page_with_solutions(browser, role):
         printExeption(f"Сообщение ошибки: {e}")
 
 
-# Обновление страницы без обновления окна браузера. Пока не заню как проверять
+# Обновление страницы без обновления окна браузера.
 def updating_the_page_without_updating_browser(browser):
     try:
         rows = WebDriverWait(browser, 20).until(

@@ -12,6 +12,7 @@ from Login import *
 from Post import *
 from Tasks import *
 from Queue import *
+from Users import *
 
 class Test(unittest.TestCase):
 
@@ -61,6 +62,10 @@ class Test(unittest.TestCase):
         filter3 = set_q_filter(self.browser, ['Check Failed'], '2131')
         filter4 = set_q_filter(self.browser, ['Арифметика', '42135'], '2131')
         self.assertTrue(filter1 and filter2 and filter3, "Тест не пройден")
+
+    def test_users(self):
+        result = users(self.browser, "Срибный",)
+        self.assertTrue(result, "Тест не пройден")
 
     def tearDown(self):
         self.browser.quit()
