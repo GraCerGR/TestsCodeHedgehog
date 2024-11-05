@@ -10,16 +10,18 @@ from selenium.webdriver.support import expected_conditions as EC
 from Exeptions import *
 import time
 
-def users(browser, username):
+def users(browser, user_name, role):
     printInfo(f"Начало теста вкладки users")
     if not go_to_the_users_tab(browser):
         return False
     if not displaying_a_page_with_users(browser):
         return False
+    if not search_by_task_name(browser, user_name, role):
+        return False
     return True
 
 
-# Переход на вкладку "Очередь"
+# Переход на вкладку "Пользователи"
 def go_to_the_users_tab(browser):
     try:
         queueButton = WebDriverWait(browser, 10).until(
@@ -32,7 +34,7 @@ def go_to_the_users_tab(browser):
         printExeption(f"Ошибка: Кнопка Пользователи не была найдена или не стала доступной.")
         return False
 
-
+# Тест отображения списка пользователей
 def displaying_a_page_with_users(browser):
     try:
         table = WebDriverWait(browser, 10).until(
@@ -53,7 +55,7 @@ def displaying_a_page_with_users(browser):
     printSuccess("Страница пользователей отображается")
     return True
 
-
+# Переключение между преподавателями и студентами
 def user_role_selector(browser, table, role):
     try:
         selector = WebDriverWait(browser, 10).until(
@@ -95,3 +97,79 @@ def user_role_selector(browser, table, role):
         # Выводим тип ошибки и сообщение
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Сообщение ошибки: {e}")
+
+
+# Поиск по имени пользователя
+def search_by_task_name(browser, user_name, role):
+    try:
+        selector = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".ant-segmented.Segmented_segmented__VNG0y.css-14h5sa0"))
+        )
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Селектор роли не найден")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    try:
+        selector.find_element(By.XPATH, f"//p[contains(text(), '{role}')]").click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Селектор '{role}' не найден")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    try:
+        searchButton = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "/html/body/div/div/div[2]/div[3]/div/div/div[1]/div/div[2]/span/input"))
+        )
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Поле ввода поиска не найдено.")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+
+    try:
+
+        for char in user_name:
+            searchButton.send_keys(char)
+            time.sleep(0.05)
+
+        WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((By.XPATH, f"//td[div[p[text()='{user_name}']]]"))
+        )
+        printInfo(f"Пользователь найден")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Пользователь '{user_name}' не найден.")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+
+    #нажатие на крестик
+    try:
+        closeButton = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((By.CLASS_NAME, 'ant-input-clear-icon'))
+        )
+        closeButton.click()
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+
+    #Проверка, что поле поиска отчистилось
+    value = searchButton.get_attribute('value')
+    if value == '':
+        printSuccess(f"Поиск работает")
+        return True
+    else:
+        printInfo(f"Ошибка: Поле поиска не отчищено")
+        return False

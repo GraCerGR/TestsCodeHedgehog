@@ -64,7 +64,7 @@ class Test(unittest.TestCase):
         self.assertTrue(filter1 and filter2 and filter3, "Тест не пройден")
 
     def test_users(self):
-        result = users(self.browser, "Срибный",)
+        result = users(self.browser, "Срибный Григорий Романович", "Студенты")
         self.assertTrue(result, "Тест не пройден")
 
     def tearDown(self):
