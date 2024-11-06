@@ -13,14 +13,16 @@ from Post import *
 from Tasks import *
 from Queue import *
 from Users import *
+from Rating import *
 
-class Test(unittest.TestCase):
+class TestStudent(unittest.TestCase):
 
     def setUp(self):
         self.browser = webdriver.Chrome()
         login_to_profile(self.browser,SITELINK, USERNAME, PASSWORD)
         login_to_class(self.browser, 'test')
         logging.basicConfig(level=logging.INFO)
+
     def test_posts(self):
         result = posts(self.browser, Post('Тестовый пост',
                     '<p>Тест</p><p>Тест<br>Тесттесттесттесттесттесттест</p><p>РЕДАКТ</p>',
@@ -65,6 +67,10 @@ class Test(unittest.TestCase):
 
     def test_users(self):
         result = users(self.browser, "Срибный Григорий Романович", "Студенты")
+        self.assertTrue(result, "Тест не пройден")
+
+    def test_rating(self):
+        result = rating(self.browser,  "Student","Арифметика", "test-admin")
         self.assertTrue(result, "Тест не пройден")
 
     def tearDown(self):

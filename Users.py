@@ -16,7 +16,7 @@ def users(browser, user_name, role):
         return False
     if not displaying_a_page_with_users(browser):
         return False
-    if not search_by_task_name(browser, user_name, role):
+    if not search_by_user_name(browser, user_name, role):
         return False
     return True
 
@@ -100,7 +100,7 @@ def user_role_selector(browser, table, role):
 
 
 # Поиск по имени пользователя
-def search_by_task_name(browser, user_name, role):
+def search_by_user_name(browser, user_name, role):
     try:
         selector = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, ".ant-segmented.Segmented_segmented__VNG0y.css-14h5sa0"))
@@ -133,7 +133,7 @@ def search_by_task_name(browser, user_name, role):
         return False
     except Exception as e:
         printExeption(f"Тип ошибки: {type(e).__name__}")
-        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        printExeption(f"Ошибка: Ошибка поиска. {e}")
         return False
 
     try:
