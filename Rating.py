@@ -11,13 +11,12 @@ from Exeptions import *
 import time
 
 def rating(browser, role, module_name, user_name):
-    parRole = 'a' if role == 'Teacher' else 'div'
     printInfo(f"Начало теста вкладки users")
     if not go_to_the_rating_tab(browser):
         return False
-    if not displaying_a_page_with_rating(browser):
+    if not displaying_a_page_with_rating(browser, role):
         return False
-    if not search_by_module_name(browser, module_name, user_name, parRole):
+    if not search_by_module_name(browser, module_name, user_name, role):
         return False
     if role == 'Teacher':
         if not going_to_the_result_when_clicking_on_the_user_name(browser):
@@ -38,7 +37,7 @@ def go_to_the_rating_tab(browser):
         printExeption(f"Ошибка: Кнопка Рейтинг не была найдена или не стала доступной.")
         return False
 
-def displaying_a_page_with_rating(browser):
+def displaying_a_page_with_rating(browser, role):
     try:
         # Ожидание, пока элемент загрузки исчезнет
         WebDriverWait(browser, 10).until(
@@ -63,9 +62,21 @@ def displaying_a_page_with_rating(browser):
 #        )
 #        printInfo(f"Элемент с классом 'Paragraph_paragraph__vZceR' появился внутри родительского элемента.")
 #        sleep(1) # Таблица с данными не успевает отрисоваться после исчезновения загрузочной таблицы
-        table = WebDriverWait(browser, 10).until(
-            EC.presence_of_element_located((By.XPATH, "//tr[contains(@class, 'ant-table-row') and .//a[contains(@class, 'LinkRouter_link_router__UL4Jy RatingTable_cell_link__khXgH')]]"))
-        )
+#        table_element = WebDriverWait(browser, 10).until(
+#            EC.presence_of_element_located((By.XPATH, "//tr[contains(@class, 'ant-table-row') and .//a[contains(@class, 'LinkRouter_link_router__UL4Jy RatingTable_cell_link__khXgH')]]"))
+#        )
+        sleep(1)
+        if role == 'Teacher':
+            table_element = WebDriverWait(browser, 10).until(
+                EC.presence_of_element_located((By.XPATH, "//tr[contains(@class, 'ant-table-row') and .//a[contains(@class, 'LinkRouter_link_router__UL4Jy RatingTable_cell_link__khXgH')]]"))
+            )
+        else:
+            table_element = WebDriverWait(browser, 10).until(
+                EC.presence_of_element_located((By.XPATH, "//tr[contains(@class, 'ant-table-row') and .//div[contains(@class, 'RatingTable_cell_link__khXgH')]]"))
+            )
+        table = table_element.find_element(By.XPATH, "..")
+
+        print(table)
         rows = table.find_elements(By.TAG_NAME, 'tr')[1:]
         data_list = []
 
@@ -103,7 +114,7 @@ def displaying_a_page_with_rating(browser):
         printExeption(f"Сообщение ошибки: {e}")
 
 
-def search_by_module_name(browser, module_name, user_name, parRole):
+def search_by_module_name(browser, module_name, user_name, role):
     try:
         searchButton = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable(
@@ -123,9 +134,8 @@ def search_by_module_name(browser, module_name, user_name, parRole):
             searchButton.send_keys(char)
             time.sleep(0.05)
         searchButton.send_keys(Keys.ENTER)
-
         WebDriverWait(browser, 10).until(
-            EC.element_to_be_clickable((By.XPATH, f"//td[{parRole}[p[text()='{user_name}']]]"))
+            EC.element_to_be_clickable((By.XPATH, f"//td[{'a' if role == 'Teacher' else 'div'}[p[text()='{user_name}']]]"))
         )
         printInfo(f"Пользователь найден")
     except (TimeoutException, NoSuchElementException):

@@ -15,17 +15,26 @@ class Post:
         self.datetime = datetime
 
 def posts(browser, post):
-    #Переход на вкладку "Посты"
+    printInfo(f"Начало теста вкладки posts")
+    if not go_to_the_post_tab(browser):
+        return False
+    if not search_by_post_name_and_check_data(browser, post):
+        return False
+    return True
+# Переход на вкладку "Посты"
+def go_to_the_post_tab(browser):
     try:
         postButton = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[2]/div[2]/button[1]"))
         )
         postButton.click()
+        return True
     except Exception:
         printExeption("Ошибка: Кнопка поста не была найдена или не стала доступной.")
-        return
+        return False
 
-    # Поиск поста
+# Поиск поста и проверка соотвтствия данных
+def search_by_post_name_and_check_data(browser, post):
     try:
         searchButton = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[2]/div[3]/div/div[1]/div/div[2]/div[1]/span/input"))

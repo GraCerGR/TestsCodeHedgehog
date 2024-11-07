@@ -68,6 +68,10 @@ class TestStudent(unittest.TestCase):
         result = users(self.browser, "Срибный Григорий Романович", "Студенты")
         self.assertTrue(result, "Тест не пройден")
 
+    def test_rating(self):
+        result = rating(self.browser,  "Student","Арифметика", "test-admin")
+        self.assertTrue(result, "Тест не пройден")
+
     def tearDown(self):
         self.browser.quit()
 
