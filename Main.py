@@ -26,7 +26,7 @@ class TestStudent(unittest.TestCase):
         result = posts(self.browser, Post('Тестовый пост',
                     '<p>Тест</p><p>Тест<br>Тесттесттесттесттесттесттест</p><p>РЕДАКТ</p>',
                     'test-admin',
-                    '10.09.2024 17:02:38'))
+                    '10.09.2024 17:02:38'), "Student")
         self.assertTrue(result, "Тест не пройден")
 
     def test_tasks(self):
@@ -87,11 +87,16 @@ class TestTeacher(unittest.TestCase):
         result = rating(self.browser,  "Teacher","Арифметика", "Трофимова Екатерина Дмитриевна")
         self.assertTrue(result, "Тест не пройден")
 
+    def test_post(self):
+        result = posts(self.browser, Post('Тестовый пост',
+                    '<p>Тест</p><p>Тест<br>Тесттесттесттесттесттесттест</p><p>РЕДАКТ</p>',
+                    'test-admin',
+                    '10.09.2024 17:02:38'), "Teacher")
+        self.assertTrue(result, "Тест не пройден")
+
     def tearDown(self):
         self.browser.quit()
 #browser = webdriver.Chrome()
-
-#login_to_profile(browser,"https://dev.code.kupriyanov.space/", "ctrhtnysq.afqk@gmail.com", "Ro91684912")
 
 #login_to_class(browser, 'test')
 
