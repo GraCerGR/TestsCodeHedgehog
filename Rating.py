@@ -11,13 +11,17 @@ from Exeptions import *
 import time
 
 def rating(browser, role, module_name, user_name):
+    parRole = 'a' if role == 'Teacher' else 'div'
     printInfo(f"Начало теста вкладки users")
     if not go_to_the_rating_tab(browser):
         return False
     if not displaying_a_page_with_rating(browser):
         return False
-    if not search_by_module_name(browser, module_name, user_name):
+    if not search_by_module_name(browser, module_name, user_name, parRole):
         return False
+    if role == 'Teacher':
+        if not going_to_the_result_when_clicking_on_the_user_name(browser):
+            return False
     return True
 
 
@@ -58,9 +62,9 @@ def displaying_a_page_with_rating(browser):
 #            lambda d: parent_element.find_element(By.CLASS_NAME, 'Paragraph_paragraph__vZceR')
 #        )
 #        printInfo(f"Элемент с классом 'Paragraph_paragraph__vZceR' появился внутри родительского элемента.")
-        sleep(1) # Таблица с данными не успевает отрисоваться после исчезновения загрузочной таблицы
+#        sleep(1) # Таблица с данными не успевает отрисоваться после исчезновения загрузочной таблицы
         table = WebDriverWait(browser, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, 'ant-table-tbody'))
+            EC.presence_of_element_located((By.XPATH, "//tr[contains(@class, 'ant-table-row') and .//a[contains(@class, 'LinkRouter_link_router__UL4Jy RatingTable_cell_link__khXgH')]]"))
         )
         rows = table.find_elements(By.TAG_NAME, 'tr')[1:]
         data_list = []
@@ -99,7 +103,7 @@ def displaying_a_page_with_rating(browser):
         printExeption(f"Сообщение ошибки: {e}")
 
 
-def search_by_module_name(browser, module_name, user_name):
+def search_by_module_name(browser, module_name, user_name, parRole):
     try:
         searchButton = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable(
@@ -121,7 +125,7 @@ def search_by_module_name(browser, module_name, user_name):
         searchButton.send_keys(Keys.ENTER)
 
         WebDriverWait(browser, 10).until(
-            EC.element_to_be_clickable((By.XPATH, f"//td[div[p[text()='{user_name}']]]"))
+            EC.element_to_be_clickable((By.XPATH, f"//td[{parRole}[p[text()='{user_name}']]]"))
         )
         printInfo(f"Пользователь найден")
     except (TimeoutException, NoSuchElementException):
@@ -148,3 +152,55 @@ def search_by_module_name(browser, module_name, user_name):
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Ошибка: {e}")
         return False
+
+# Переход на страницу результатов при нажатии на имя пользователя
+def going_to_the_result_when_clicking_on_the_user_name(browser):
+    try:
+        element = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//tr[contains(@class, 'ant-table-row') and .//a[contains(@class, 'LinkRouter_link_router__UL4Jy RatingTable_cell_link__khXgH')]]"))
+        )
+        first_column = element.find_element(By.XPATH, ".//td[2]//p")
+        first_column_text = first_column.text
+        printInfo(f"Имя пользователя: {first_column_text}")
+        first_column.click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Имя пользователя не найдено")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    try:
+        WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, f"//h2[text()='Результаты']"))
+        )
+        WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, f"//div[contains(@class, 'ant-flex') and .//p[text()='Пользователь:'] and .//a[text()='{first_column_text}']]"
+            ))
+        )
+        printSuccess(f"Переход на страницу результатов пользователя {first_column_text} выполнен")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Переход на страницу результатов пользователя {first_column_text} не выполнен.")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    try:
+        sleep(1)
+        back_button = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((
+                By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc') and span[text()='Назад']]"
+            ))
+        )
+        back_button.click()
+        return True
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Элемент 'Назад' не найден.")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Выход из деталей задачи не выполнен: {e}")

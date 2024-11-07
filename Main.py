@@ -21,7 +21,6 @@ class TestStudent(unittest.TestCase):
         self.browser = webdriver.Chrome()
         login_to_profile(self.browser,SITELINK, USERNAME, PASSWORD)
         login_to_class(self.browser, 'test')
-        logging.basicConfig(level=logging.INFO)
 
     def test_posts(self):
         result = posts(self.browser, Post('Тестовый пост',
@@ -69,16 +68,23 @@ class TestStudent(unittest.TestCase):
         result = users(self.browser, "Срибный Григорий Романович", "Студенты")
         self.assertTrue(result, "Тест не пройден")
 
-    def test_rating(self):
-        result = rating(self.browser,  "Student","Арифметика", "test-admin")
-        self.assertTrue(result, "Тест не пройден")
-
     def tearDown(self):
         self.browser.quit()
 
 
+class TestTeacher(unittest.TestCase):
 
+    def setUp(self):
+        self.browser = webdriver.Chrome()
+        login_to_profile(self.browser,SITELINK, USERNAME, PASSWORD)
+        login_to_class(self.browser, 'Test machine learning class')
 
+    def test_rating(self):
+        result = rating(self.browser,  "Teacher","Арифметика", "Трофимова Екатерина Дмитриевна")
+        self.assertTrue(result, "Тест не пройден")
+
+    def tearDown(self):
+        self.browser.quit()
 #browser = webdriver.Chrome()
 
 #login_to_profile(browser,"https://dev.code.kupriyanov.space/", "ctrhtnysq.afqk@gmail.com", "Ro91684912")
