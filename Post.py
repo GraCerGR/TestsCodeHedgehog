@@ -71,7 +71,7 @@ def search_by_post_name_and_check_data(browser, post, role):
         # Выводим тип ошибки и сообщение
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Сообщение ошибки: {e}")
-
+    browser.execute_script("arguments[0].scrollIntoView();", postLinkName)
     postLinkName.find_element(By.XPATH, f"//button[contains(@class, 'ButtonNonUi_button_non_ui__Mn9Zr') and h3[text()='{post.name}']]").click()
 
     # Проверка соответсвия во вкладке "Перейти к полному тексту"

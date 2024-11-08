@@ -360,7 +360,9 @@ def viewing_task_details(browser, section):
                            f".//following::p[text()='{section.task.points}']]"))
         )
         printInfo(f"Задача найдена")
+
     # Вход в описание задачи
+        browser.execute_script("arguments[0].scrollIntoView();", taskButton)
         taskButton.find_element(By.XPATH, f".//following::p[text()='{section.task.name}']").click()
         printInfo(f"Вход в детали задачи '{section.task.name}' выполнен")
     except (TimeoutException, NoSuchElementException):
@@ -407,13 +409,18 @@ def viewing_task_details(browser, section):
 
     except (TimeoutException, NoSuchElementException):
         printExeption(
-            f"Ошибка: Не удалось получить информацию о назавнии, баллах и/или успешных решениях.")
-        return False
+            f"Ошибка: Не удалось получить информацию о вердиктах.")
     except Exception as e:
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
         return False
 
+# --------------- Возврат на предыдущую страницу -------------------
+    printSuccess(f"Детали задачи {title} отображаются")
+    browser.back()
+    go_to_the_tasks_tab(browser)
+    return True
+    """
     try:
         back_button = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable((
@@ -429,3 +436,4 @@ def viewing_task_details(browser, section):
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Выход из деталей задачи не выполнен: {e}")
     return True
+    """
