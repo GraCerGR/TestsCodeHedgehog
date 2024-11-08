@@ -27,6 +27,10 @@ def posts(browser, post, role):
             return False
         if not search_by_post_name_and_check_data(browser, newPost, role):
             return False
+        if not delete_post(browser, newPost):
+            return False
+        if search_by_post_name_and_check_data(browser, newPost, role):
+            return True
     else:
         if not search_by_post_name_and_check_data(browser, post, role):
             return False
@@ -67,6 +71,7 @@ def search_by_post_name_and_check_data(browser, post, role):
         # Выводим тип ошибки и сообщение
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Сообщение ошибки: {e}")
+
     postLinkName.find_element(By.XPATH, f"//button[contains(@class, 'ButtonNonUi_button_non_ui__Mn9Zr') and h3[text()='{post.name}']]").click()
 
     # Проверка соответсвия во вкладке "Перейти к полному тексту"
@@ -127,7 +132,6 @@ def search_by_post_name_and_check_data(browser, post, role):
             EC.element_to_be_clickable((By.XPATH, "//button[span[text()='Закрыть']]"))
         ).click()
         printSuccess(f'Данные поста {post.name} верны')
-        return True
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Кнопка выхода не найдена")
         return False
@@ -136,6 +140,16 @@ def search_by_post_name_and_check_data(browser, post, role):
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Сообщение ошибки: {e}")
 
+    try:
+        closeButton = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((By.CLASS_NAME, 'ant-input-clear-icon'))
+        )
+        closeButton.click()
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+    return True
 
 def creating_post(browser, post):
     try:
@@ -268,7 +282,83 @@ def creating_post(browser, post):
         # Выводим тип ошибки и сообщение
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Сообщение ошибки: {e}")
+
     post = Post(nameInfo, descriptionInfo, author_name, time_value)
     printSuccess(f"Пост '{post.name}' создан")
     sleep(1)
     return post
+
+def delete_post(browser, post):
+    try:
+        searchButton = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "/html/body/div/div/div[2]/div[3]/div/div[1]/div/div[2]/div[1]/span/input"))
+        )
+        searchButton.send_keys(post.name)
+        #        postLinkName = WebDriverWait(browser, 10).until(
+        #            EC.element_to_be_clickable((By.XPATH, f"//button[contains(@class, 'ButtonNonUi_button_non_ui__Mn9Zr') and h3[text()='{post.name}']]"))
+        #        )
+        postLinkName = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((
+                By.XPATH,
+                f"//div[contains(@class, 'PostCard_post_card__uuefG') and contains(., '{post.name}') and contains(., '{post.author}, {post.datetime}')]"
+            ))
+        )
+        printInfo(f"Пост '{post.name}' c данными '{post.author}, {post.datetime}' найден")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Пост '{post.name}' c данными '{post.author}, {post.datetime}' не найден")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+    try:
+        postLinkName.find_element(By.XPATH,
+                                  f"//button[contains(@class, 'PostCard_delete_button__OWery')]").click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Кнопка удаления поста '{post.name}' не найдена")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    sleep(0.5) # Задержка для открытия окна
+    try:
+        deletePostDiv = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((
+                By.XPATH,
+                f"//div[contains(@class, 'Modal_content__miRwP') and contains(., 'Удаление поста. Вы уверены?')]"
+            ))
+        )
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Модальное окно подтверждения удаления поста не найдено")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    try:
+        deletePostDiv.find_element(By.XPATH,
+                                  f"//button[contains(@class, 'Button_button_type_accent__NGYDO') and span[text()='{'Подтвердить'}']]").click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Кнопка удаления поста '{post.name}' в модальном окне не найдена")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    sleep(0.5) # Задержка для открытия окна
+    try:
+        closeButton = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((By.CLASS_NAME, 'ant-input-clear-icon'))
+        )
+        closeButton.click()
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+    printSuccess(f"Пост {post.name} c данными '{post.author}, {post.datetime}' успешно удалён")
+    return True
