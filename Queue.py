@@ -25,10 +25,10 @@ def queues(browser, task_name, role):
     if not search_by_task_name(browser, task_name):
         return False
     sleep(2)
-    if not displaying_the_page_with_details(browser, task_name):
+    if not displaying_a_page_with_solutions(browser, role):
         return False
     sleep(2)
-    if not displaying_a_page_with_solutions(browser, role):
+    if not displaying_the_page_with_details(browser, task_name):
         return False
     sleep(2)
     if not updating_the_page_without_updating_browser(browser):

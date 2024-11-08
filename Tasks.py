@@ -333,6 +333,7 @@ def script_making_a_solution_of_task(browser, task):
 
 
 def viewing_task_details(browser, section):
+    solution = 0 # переменная для определения выполнения теста страницы последнего решения
     # Поиск задачи
     try:
         searchButton = WebDriverWait(browser, 10).until(
@@ -381,6 +382,7 @@ def viewing_task_details(browser, section):
         )
         title = title_element.find_element(By.TAG_NAME, "h2").text
         printInfo(f"Название: {title}")
+        check(section.task.name, title, "Название задачи")
 
         infos = title_element.find_elements(By.CLASS_NAME, "Paragraph_paragraph__vZceR")
         for info in infos:
@@ -406,6 +408,8 @@ def viewing_task_details(browser, section):
             text = info.text
             if text != "Перейти к моему последнему решению":
                 printInfo(f"Вердикт: {info.text}")
+            else:
+                solution = info
 
     except (TimeoutException, NoSuchElementException):
         printExeption(
@@ -414,6 +418,11 @@ def viewing_task_details(browser, section):
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
         return False
+
+    if solution:
+        solution.click()
+        if not last_solution(browser, section):
+            return False
 
 # --------------- Возврат на предыдущую страницу -------------------
     printSuccess(f"Детали задачи {title} отображаются")
@@ -437,3 +446,94 @@ def viewing_task_details(browser, section):
         printExeption(f"Выход из деталей задачи не выполнен: {e}")
     return True
     """
+
+def last_solution(browser, section):
+    try:
+        header_element = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH,
+                                            "//h2[contains(@class, 'Title_title__Hbrke') and contains(@class, 'Title_title_level_2__mrJuT')]"))
+        )
+        task_name = header_element.find_element(By.TAG_NAME, 'a').text
+        check(section.task.name, task_name, "Название задачи")
+        printInfo(f"Название задачи: {task_name}")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Заголовок не найден")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+        return False
+
+    try:
+        description_info = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'TextInfo_text_info__spbMJ'))
+        ).text
+
+        # Разделение текста на части
+        date, user_info, attempts_info = description_info.split(' | ')
+        printInfo(f"Дата отправки: {date}")
+        printInfo(f"Автор решения: {user_info} ")
+        printInfo(f"{attempts_info}")
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Дата, имя пользователя и попытки не найдены")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+        return False
+
+    try:
+        infos = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'FactsBlock_facts_block__dmWEx'))
+        )
+        info = infos.find_elements(By.TAG_NAME, 'p')
+        for i in info:
+            printInfo(f"{i.text}")
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Данные (язык, лимиты, баллы) не найдены")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+        return False
+
+    try:
+        verdict = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//div[contains(@class, 'VerdictSection_current_verdict__K-ILx')]//p"))
+        ).text
+        printInfo(f"Вердикт: {verdict}")
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Вердикт не найден")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+        return False
+
+    try:
+        code_element = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".ace_text-layer"))
+        )
+        # Извлечение текста из найденного элемента
+        code_lines = code_element.find_elements(By.CSS_SELECTOR, ".ace_line")
+        code_text = " ".join([line.text for line in code_lines])
+
+#        code_lines = code_element.find_elements(By.CSS_SELECTOR, ".ace_line") # Код для вывода солюшена с переносами
+#        code_text = "\n".join([line.text for line in code_lines])
+
+        printInfo(f"Решение: {code_text[:50]}...")
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Вердикт не найден")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+        return False
+
+    printSuccess("Детали попытки доступны для просмотра")
+    return True
