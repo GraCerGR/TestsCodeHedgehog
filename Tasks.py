@@ -41,6 +41,8 @@ def tasks(browser, module):
     # Переход на вкладку "Задачи"
     if not go_to_the_tasks_tab(browser):
         return False
+    if not viewing_task_details(browser, module.section):
+        return False
     if not search_by_task_name(browser, module.section):
         return False
     if not viewing_statistics_in_the_module(browser, module):
@@ -328,3 +330,102 @@ def script_making_a_solution_of_task(browser, task):
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Ошибка: Ошибка отправки решения. {e}")
         return False
+
+
+def viewing_task_details(browser, section):
+    # Поиск задачи
+    try:
+        searchButton = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "/html/body/div/div/div[2]/div[3]/form/div/div[1]/div/div[2]/div[1]/span/input"))
+        )
+
+        # При быстром вводе предыдующие символы не успевают отобразиться (в поисковике остаётся только последний символ)
+        # searchButton.send_keys(section.task.name)
+        # Поэтому посимвольный ввод
+        for char in section.task.name:
+            searchButton.send_keys(char)
+            time.sleep(0.05)
+
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+    try:
+        taskButton = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, f"//button[contains(@class, 'SectionStructure_section_structure_button__ZU4zy') and "
+                           f".//p[text()='{section.name}'] and "
+                           f".//following::p[text()='{section.task.name}'] and "
+                           f".//following::p[text()='{section.task.points}']]"))
+        )
+        printInfo(f"Задача найдена")
+    # Вход в описание задачи
+        taskButton.find_element(By.XPATH, f".//following::p[text()='{section.task.name}']").click()
+        printInfo(f"Вход в детали задачи '{section.task.name}' выполнен")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(
+            f"Ошибка: Задача '{section.task.name}' в секции {section.name} с баллами '{section.task.points}' не была найдена или не стала доступной.")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+
+    try:
+        title_element = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located(
+                (By.CLASS_NAME, "HeaderPage_header_page__k3oIt"))
+        )
+        title = title_element.find_element(By.TAG_NAME, "h2").text
+        printInfo(f"Название: {title}")
+
+        infos = title_element.find_elements(By.CLASS_NAME, "Paragraph_paragraph__vZceR")
+        for info in infos:
+            printInfo(f"{info.text}")
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(
+            f"Ошибка: Не удалось получить информацию о назавнии, баллах и/или успешных решениях.")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+
+    try:
+        verdict_element = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located(
+                (By.CLASS_NAME, "TaskClassVerdicts_task_class_verdicts_card__ak4r6"))
+        )
+
+        infos = verdict_element.find_elements(By.CLASS_NAME, "Paragraph_paragraph__vZceR")
+        for info in infos:
+            text = info.text
+            if text != "Перейти к моему последнему решению":
+                printInfo(f"Вердикт: {info.text}")
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(
+            f"Ошибка: Не удалось получить информацию о назавнии, баллах и/или успешных решениях.")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+
+    try:
+        back_button = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((
+                By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc') and span[text()='Назад']]"
+            ))
+        )
+        back_button.click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Элемент 'Назад' не найден.")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Выход из деталей задачи не выполнен: {e}")
+    return True
