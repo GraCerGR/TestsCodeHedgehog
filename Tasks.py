@@ -468,7 +468,7 @@ def last_solution(browser, section):
         description_info = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, 'TextInfo_text_info__spbMJ'))
         ).text
-
+        description_info = description_info.replace("Перейти к списку решений других студентов", "").strip()
         # Разделение текста на части
         date, user_info, attempts_info = description_info.split(' | ')
         printInfo(f"Дата отправки: {date}")

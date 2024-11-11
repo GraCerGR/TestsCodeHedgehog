@@ -68,7 +68,7 @@ class TestStudent(unittest.TestCase):
         self.assertTrue(filter1 and filter2 and filter3 and filter4, "Тест не пройден")
 
     def test_users(self):
-        result = users(self.browser, "Срибный Григорий Романович", "Студенты")
+        result = users(self.browser, "Срибный Григорий Романович", "Студенты", "Student")
         self.assertTrue(result, "Тест не пройден")
 
     def test_rating(self):
@@ -100,7 +100,7 @@ class TestTeacher(unittest.TestCase):
     def test_tasks(self):
         result = tasks(self.browser, Module('Арифметика',
                       0,
-                      6,
+                      5,
                       0,
                       126973,
                       Section(
@@ -132,7 +132,7 @@ class TestTeacher(unittest.TestCase):
         self.assertTrue(filter1 and filter2 and filter3 and filter4, "Тест не пройден")
 
     def test_users(self):
-        result = users(self.browser, "test-admin", "Преподаватели")
+        result = users(self.browser, "test-admin", "Преподаватели", "Teacher")
         self.assertTrue(result, "Тест не пройден")
 
     def tearDown(self):

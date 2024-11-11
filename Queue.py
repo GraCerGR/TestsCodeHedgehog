@@ -341,7 +341,7 @@ def search_by_task_name(browser, task_name):
         for char in task_name:
             searchButton.send_keys(char)
             time.sleep(0.1)
-
+        sleep(2)
         task_element = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable((By.XPATH, f"//a[span[text()='{task_name}']]"))
         )
@@ -571,6 +571,7 @@ def displaying_the_page_with_details(browser, task_name):
     #Проверка, что поле поиска отчистилось
     value = searchButton.get_attribute('value')
     if value == '':
+        browser.refresh()
         return True
     else:
         printInfo(f"Ошибка: Поле поиска не отчищено")

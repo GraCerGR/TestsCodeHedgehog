@@ -10,13 +10,13 @@ from selenium.webdriver.support import expected_conditions as EC
 from Exeptions import *
 import time
 
-def users(browser, user_name, role):
+def users(browser, user_name, roleSelector, role):
     printInfo(f"Начало теста вкладки users")
     if not go_to_the_users_tab(browser):
         return False
-    if not displaying_a_page_with_users(browser):
+    if not displaying_a_page_with_users(browser, role):
         return False
-    if not search_by_user_name(browser, user_name, role):
+    if not search_by_user_name(browser, user_name, roleSelector, role):
         return False
     return True
 
@@ -35,7 +35,7 @@ def go_to_the_users_tab(browser):
         return False
 
 # Тест отображения списка пользователей
-def displaying_a_page_with_users(browser):
+def displaying_a_page_with_users(browser, role):
     try:
         table = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "UsersSection_table__Mb8Rv"))
@@ -48,15 +48,15 @@ def displaying_a_page_with_users(browser):
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Сообщение ошибки: {e}")
 
-    if not user_role_selector(browser, table, "Преподаватели"):
+    if not user_role_selector(browser, table, "Преподаватели", role):
         return False
-    if not user_role_selector(browser, table, "Студенты"):
+    if not user_role_selector(browser, table, "Студенты", role):
         return False
     printSuccess("Страница пользователей отображается")
     return True
 
 # Переключение между преподавателями и студентами
-def user_role_selector(browser, table, role):
+def user_role_selector(browser, table, roleSelector, role):
     try:
         selector = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, ".ant-segmented.Segmented_segmented__VNG0y.css-14h5sa0"))
@@ -70,9 +70,9 @@ def user_role_selector(browser, table, role):
         printExeption(f"Сообщение ошибки: {e}")
 
     try:
-        selector.find_element(By.XPATH, f"//p[contains(text(), '{role}')]").click()
+        selector.find_element(By.XPATH, f"//p[contains(text(), '{roleSelector}')]").click()
     except (TimeoutException, NoSuchElementException):
-        printExeption(f"Селектор '{role}' не найден")
+        printExeption(f"Селектор '{roleSelector}' не найден")
         return False
     except Exception as e:
         # Выводим тип ошибки и сообщение
@@ -84,11 +84,27 @@ def user_role_selector(browser, table, role):
             EC.presence_of_element_located(
                 (By.CSS_SELECTOR, ".ant-segmented.Segmented_segmented__VNG0y.css-14h5sa0"))
         )
-        user_cells = table.find_elements(By.CSS_SELECTOR, "td.ant-table-cell div.UsersSection_cell_link__c1oRg:not([class*=' '])")
+        if role == "Student":
+            user_cells = table.find_elements(By.CSS_SELECTOR, "td.ant-table-cell div.UsersSection_cell_link__c1oRg:not([class*=' '])")
 
-        printInfo(f"{role} найдены, первые 10:")
-        for cell in user_cells[:10]:
-            printInfo(f"{cell.find_element(By.TAG_NAME, "p").text}")
+            printInfo(f"{roleSelector} найдены, первые 10:")
+            for cell in user_cells[:10]:
+                printInfo(f"{cell.find_element(By.TAG_NAME, "p").text}")
+        else:
+            rows = table.find_elements(By.CSS_SELECTOR, 'tr.ant-table-row')
+            users_info = []
+
+            for row in rows[:10]:
+                name_element = row.find_element(By.CSS_SELECTOR, 'td.ant-table-cell a p.Paragraph_paragraph__vZceR')
+                email_element = row.find_elements(By.CSS_SELECTOR, 'td.ant-table-cell a p.Paragraph_paragraph__vZceR')[1]
+                name = name_element.text
+                email = email_element.text
+                users_info.append(f"{name}, почта: {email}")
+
+            printInfo(f"{roleSelector} найдены, первые 10:")
+            for user in users_info:
+                printInfo(user)
+
         return True
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Пользователи не найдены")
@@ -100,7 +116,7 @@ def user_role_selector(browser, table, role):
 
 
 # Поиск по имени пользователя
-def search_by_user_name(browser, user_name, role):
+def search_by_user_name(browser, user_name, roleSelector, role):
     try:
         selector = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, ".ant-segmented.Segmented_segmented__VNG0y.css-14h5sa0"))
@@ -114,9 +130,9 @@ def search_by_user_name(browser, user_name, role):
         printExeption(f"Сообщение ошибки: {e}")
 
     try:
-        selector.find_element(By.XPATH, f"//p[contains(text(), '{role}')]").click()
+        selector.find_element(By.XPATH, f"//p[contains(text(), '{roleSelector}')]").click()
     except (TimeoutException, NoSuchElementException):
-        printExeption(f"Селектор '{role}' не найден")
+        printExeption(f"Селектор '{roleSelector}' не найден")
         return False
     except Exception as e:
         # Выводим тип ошибки и сообщение
@@ -142,9 +158,14 @@ def search_by_user_name(browser, user_name, role):
             searchButton.send_keys(char)
             time.sleep(0.05)
 
-        WebDriverWait(browser, 10).until(
-            EC.element_to_be_clickable((By.XPATH, f"//td[div[p[text()='{user_name}']]]"))
-        )
+        if role == "Student":
+            WebDriverWait(browser, 10).until(
+                EC.element_to_be_clickable((By.XPATH, f"//td[div[p[text()='{user_name}']]]"))
+            )
+        else:
+            WebDriverWait(browser, 10).until(
+                EC.element_to_be_clickable((By.XPATH, f"//td[a[p[text()='{user_name}']]]"))
+            )
         printInfo(f"Пользователь найден")
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Пользователь '{user_name}' не найден.")

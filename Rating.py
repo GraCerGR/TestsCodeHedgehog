@@ -76,7 +76,7 @@ def displaying_a_page_with_rating(browser, role):
             )
         table = table_element.find_element(By.XPATH, "..")
 
-        print(table)
+        # print(table)
         rows = table.find_elements(By.TAG_NAME, 'tr')[1:]
         data_list = []
 
