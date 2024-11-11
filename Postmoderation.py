@@ -18,9 +18,9 @@ class TaskData:
         self.submission_date = submission_date
         self.verdict = verdict
 
-def queues(browser, task_name, role):
+def postmoderation(browser, task_name, role):
     printInfo(f"Начало теста вкладки queues")
-    if not go_to_the_queue_tab(browser):
+    if not go_to_the_postmoderation_tab(browser):
         return False
     if not search_by_task_name(browser, task_name):
         return False
@@ -41,17 +41,17 @@ def queues(browser, task_name, role):
         return False
     return True  # Возвращаем True, если все проверки пройдены
 
-# Переход на вкладку "Очередь"
-def go_to_the_queue_tab(browser):
+# Переход на вкладку "Постмодерация"
+def go_to_the_postmoderation_tab(browser):
     try:
-        queueButton = WebDriverWait(browser, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[2]/div[2]/button[3]"))
+        Button = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[2]/div[2]/button[4]"))
         )
-        queueButton.click()
-        printSuccess(f"Переход на страницу 'Очередь' выполнен")
+        Button.click()
+        printSuccess(f"Переход на страницу 'Постмодерация (ожидающие проверку решения)' выполнен")
         return True
     except Exception:
-        printExeption(f"Ошибка: Кнопка очереди не была найдена или не стала доступной.")
+        printExeption(f"Ошибка: Кнопка постмодерации не была найдена или не стала доступной.")
         return False
 
 # Тест отображения сообщения об отсутствии данных
@@ -72,7 +72,7 @@ def displaying_a_page_with_no_solutions(browser):
         printExeption(f"Сообщение ошибки: {e}")
 
 
-# Тест отображения очереди решений
+# Тест отображения постмодерации решений
 def displaying_a_page_with_solutions(browser, role):
     try:
         elements = WebDriverWait(browser, 20).until(
@@ -121,7 +121,7 @@ def displaying_a_page_with_solutions(browser, role):
             raise ValueError(f"На странице больше элементов чем {page_size}")
             return False
 
-        printSuccess(f"Очередь отображается")
+        printSuccess(f"Очередь в постмодерации отображается")
         return True
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Элемент не найден. {e}")
@@ -341,7 +341,7 @@ def search_by_task_name(browser, task_name):
         for char in task_name:
             searchButton.send_keys(char)
             time.sleep(0.1)
-
+        sleep(2)
         task_element = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable((By.XPATH, f"//a[span[text()='{task_name}']]"))
         )
@@ -457,8 +457,7 @@ def displaying_the_page_with_details(browser, task_name):
 
     try:
         name = WebDriverWait(browser, 10).until(
-            EC.visibility_of_element_located(
-                (By.XPATH, f"//h3[contains(text(), 'Постмодерация') and .//a[text()='{taskdata.task_name}']]"))
+            EC.visibility_of_element_located((By.XPATH, f"//h3[contains(text(), 'Постмодерация') and .//a[text()='{taskdata.task_name}']]"))
         )
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Заголовок не найден, или название задачи не соответствует заголовку")
@@ -470,8 +469,7 @@ def displaying_the_page_with_details(browser, task_name):
 
     try:
         date = WebDriverWait(browser, 10).until(
-            EC.visibility_of_element_located(
-                (By.XPATH, f"//p[contains(text(), '{taskdata.submission_date}') and contains(., '{taskdata.user}')]"))
+            EC.visibility_of_element_located((By.XPATH, f"//p[contains(text(), '{taskdata.submission_date}') and contains(., '{taskdata.user}')]"))
         )
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Дата или имя пользователя не найдены или не соответствуют данным")
@@ -493,11 +491,10 @@ def displaying_the_page_with_details(browser, task_name):
         printExeption(f"Сообщение ошибки: {e}")
         return False
 
-        # -------------- Проверка последовательности тестов --------------
+# -------------- Проверка последовательности тестов --------------
     try:
         testButton = WebDriverWait(browser, 10).until(
-            EC.visibility_of_element_located((By.XPATH,
-                                              "//div[contains(@class, 'ant-collapse-header') and .//span[text()='Развернуть список тестов']]"))
+            EC.visibility_of_element_located((By.XPATH, "//div[contains(@class, 'ant-collapse-header') and .//span[text()='Развернуть список тестов']]"))
         )
         testButton.click()
     except (TimeoutException, NoSuchElementException):
@@ -511,8 +508,7 @@ def displaying_the_page_with_details(browser, task_name):
     try:
         table_container = WebDriverWait(browser, 10).until(
             EC.visibility_of_element_located(
-                (By.XPATH,
-                 "//span[text()='Развернуть список тестов']/ancestor::div[contains(@class, 'ant-collapse-item')]"))
+                (By.XPATH, "//span[text()='Развернуть список тестов']/ancestor::div[contains(@class, 'ant-collapse-item')]"))
         )
         sleep(1)
         rows = table_container.find_elements(By.CSS_SELECTOR, ".ant-table-tbody tr")
@@ -522,7 +518,7 @@ def displaying_the_page_with_details(browser, task_name):
             cells = row.find_elements(By.TAG_NAME, "td")
             if cells:  # Убедитесь, что ячейки существуют
                 test_number = cells[0].text.strip()  # Получаем текст из первой ячейки
-                if (test_number == 'Кажется, здесь пока нет данных 🔎\nНо мы работаем над их появлением 👀'):
+                if(test_number == 'Кажется, здесь пока нет данных 🔎\nНо мы работаем над их появлением 👀'):
                     printInfo("Тесты отсутствуют")
                     break
                 test_numbers.append(int(test_number))  # Преобразуем в целое число
@@ -539,12 +535,12 @@ def displaying_the_page_with_details(browser, task_name):
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Сообщение ошибки: {e}")
         return False
-    if ((name is not None) and (date is not None) and (language is not None) and is_sorted):
+    if  ((name is not None) and (date is not None) and (language is not None) and is_sorted):
         printSuccess(f"Детали задачи '{taskdata.task_name}' соответствуют данным")
     else:
         printExeption(f"Детали задачи '{taskdata.task_name}' не соответствуют данным")
 
-    # Выход
+# Выход
     try:
         WebDriverWait(browser, 10).until(
             EC.visibility_of_element_located((By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc')]/span[text()='Закрыть']"))
@@ -571,6 +567,7 @@ def displaying_the_page_with_details(browser, task_name):
     #Проверка, что поле поиска отчистилось
     value = searchButton.get_attribute('value')
     if value == '':
+        browser.refresh()
         return True
     else:
         printInfo(f"Ошибка: Поле поиска не отчищено")
@@ -578,8 +575,8 @@ def displaying_the_page_with_details(browser, task_name):
 
 
 # Настройка фильтрации
-def set_q_filter(browser, filters: list, task_name):
-    go_to_the_queue_tab(browser)
+def set_p_filter(browser, filters: list, task_name):
+    go_to_the_postmoderation_tab(browser)
     try:
         filter_button = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable((
@@ -612,6 +609,9 @@ def set_q_filter(browser, filters: list, task_name):
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Сообщение ошибки: {e}")
 
+    WebDriverWait(browser, 10).until(
+        EC.element_to_be_clickable((By.XPATH, "//p[text()='Сбросить']"))
+    ).click() # Отчистить фильтр от прошлых тестов (если прошлые тесты обвалятся)
     # Перебор списка фильтров
     for filter in filters:
         try:
@@ -637,7 +637,7 @@ def set_q_filter(browser, filters: list, task_name):
     except (TimeoutException, NoSuchElementException):
         printExeption(
             f"Ошибка: Задача '{task_name}' c фильтрами '{', '.join(filters)}' не была найдена или не стала доступной.")
-        return False
+        return False # Уберу, чтобы остальные тесты не валились
     except Exception as e:
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Ошибка: Ошибка поиска задачи. {e}")

@@ -234,7 +234,7 @@ def set_t_filter(browser, filters: list, task: Task):
         printInfo(f"Задача '{task.name}' найдена")
     except (TimeoutException, NoSuchElementException):
         printExeption(
-            f"Ошибка: Задача '{task.name}' с очками '{task.points}' и фильтром '{filter}' не была найдена или не стала доступной.")
+            f"Ошибка: Задача '{task.name}' с очками '{task.points}' и фильтрами '{', '.join(filters)}' не была найдена или не стала доступной.")
         return False
     except Exception as e:
         printExeption(f"Тип ошибки: {type(e).__name__}")
@@ -246,7 +246,7 @@ def set_t_filter(browser, filters: list, task: Task):
             filtering_section.find_element(By.XPATH,f".//p[text()='{filter}' and contains(@class, 'Paragraph_paragraph__vZceR')]").click()
         filter_button.click()
         filters_string = ", ".join(filters)
-        printSuccess(f"Фильтр {filters_string} работает")
+        printSuccess(f"Фильтр(-ы) '{filters_string}' работает(-ют)")
         return True
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Кнопка скрытия фильтрации или отключения фильтра не найдена")
