@@ -135,6 +135,10 @@ class TestTeacher(unittest.TestCase):
         result = users(self.browser, "test-admin", "Преподаватели", "Teacher")
         self.assertTrue(result, "Тест не пройден")
 
+    def test_postmoderation_management(self):
+        result = postmoderation_management(self.browser)
+        self.assertTrue(result, "Тест не пройден")
+
     def tearDown(self):
         self.browser.quit()
 
@@ -159,35 +163,3 @@ class TestStudent_On_Main_Site(unittest.TestCase):
 
     def tearDown(self):
         self.browser.quit()
-
-
-#browser = webdriver.Chrome()
-
-#login_to_class(browser, 'test')
-
-
-'''posts(browser, Post('Тестовый пост',
-                    '<p>Тест</p><p>Тест<br>Тесттесттесттесттесттесттест</p><p>РЕДАКТ</p>',
-                    'test-admin',
-                    '10.09.2024 17:02:38'))'''
-
-'''tasks(browser, Module('Арифметика',
-                      0,
-                      6,
-                      0,
-                      126973,
-                      Section(
-                          'Новая секция 3',
-                          0,
-                          1,
-                          0,
-                          123,
-                              Task(
-                                  'Найти первые N простых чисел',
-                                  123))))'''
-
-# script_making_a_solution_of_task(browser, Task('Найти первые N простых чисел', 0))
-
-#queues(browser, "Найти первые N простых чисел", "Student")
-
-#input("Нажмите Enter, чтобы закрыть браузер...")
