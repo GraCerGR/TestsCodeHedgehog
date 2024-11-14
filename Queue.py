@@ -46,6 +46,8 @@ def postmoderation_management(browser, verdict): # Сделал эту пров�
         return False
     if not issuing_a_verdict(browser, verdict):
         return False
+    if not issuing_a_delete_verdict(browser):
+        return False
     if not resending_the_students_decision(browser):
         return False
     return True
@@ -918,6 +920,161 @@ def issuing_a_verdict(browser, verdict):
     return True
 
 
+# Выставление вердикта
+def issuing_a_delete_verdict(browser):
+    solutiondata = searchElementOfTable(browser)
+    if not solutiondata:
+        return False
+    try:
+        attempt = WebDriverWait(browser, 20).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR,
+                                            '.ant-table-row.ant-table-row-level-0'))
+        )
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Строка с попыткой не найдена")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    # -------------- Удаление вердикта --------------
+    try:
+        buttons_attempt = attempt.find_elements(By.CSS_SELECTOR, '.ant-btn.css-14h5sa0.ant-btn-text.ant-btn-lg.ant-btn-icon-only.IconButton_icon_button__7vyd9')
+        if len(buttons_attempt) != 2:
+            printExeption("Кнопка деталей решения не найдена или кол-во кнопок не равно 2")
+            return False
+        buttons_attempt[0].click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Кнопка деталей решения не найдена")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    try:
+        verdict = WebDriverWait(browser, 10).until(
+            EC.visibility_of_element_located((By.XPATH, f"//div[contains(@class, 'VerdictSection_current_verdict__K-ILx')]"))
+        )
+        verdict.find_element(By.XPATH, "..//button[contains(@class, 'ButtonNonUi_button_non_ui__Mn9Zr')]").click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption("Нынешний вердикт не найден или уже отсутствует")
+        # Выход
+        try:
+            WebDriverWait(browser, 10).until(
+                EC.visibility_of_element_located(
+                    (By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc')]/span[text()='Закрыть']"))
+            ).click()
+        except (TimeoutException, NoSuchElementException):
+            printExeption(f"Кнопка выхода не найдена")
+            return False
+        except Exception as e:
+            printExeption(f"Тип ошибки: {type(e).__name__}")
+            printExeption(f"Сообщение ошибки: {e}")
+            return False
+        return True
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    # -------------- Ожидание notification и перезагрузка страницы --------------
+    try:
+        WebDriverWait(browser, 20).until(
+            EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'ant-notification-notice-message')]//p[contains(text(), 'Изменения успешно сохранены')]"))
+        )
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Уведомление не найдено")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    try:
+        WebDriverWait(browser, 10).until(
+            EC.visibility_of_element_located((By.XPATH, f"//div[contains(@class, 'VerdictSection_current_verdict__K-ILx') and .//p[text()='Ожидание вердикта']]"))
+        )
+        printInfo(f"Вердикт 'Ожидание вердикта' отображён в деталях решения")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Кнопка выхода не найдена")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+        return False
+
+    # Выход
+    try:
+        WebDriverWait(browser, 10).until(
+            EC.visibility_of_element_located((By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc')]/span[text()='Закрыть']"))
+        ).click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Кнопка выхода не найдена")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+        return False
+
+    # ----------- Поиск кнопки обновления -----------
+    try:
+        WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc') and span[text()='Обновить страницу']]"))
+        ).click()
+        printInfo(f"Данные обновлены")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Кнопка обновления не найдена")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    # ----------- Повторный поиск и проверка смены вердикта -----------
+    try:
+        WebDriverWait(browser, 20).until(
+            EC.presence_of_all_elements_located((By.XPATH,
+                                                 "//tr[contains(@class, 'ant-table-row') and .//a[contains(@class, 'LinkRouter_link_router__UL4Jy QueueTable_cell_link__ZnHtE')]]"))
+        )  # Это нужно, чтобы дождаться загрузки таблицы
+        row = browser.find_element(By.XPATH,
+                                   f"//tr[.//span[contains(text(), '{solutiondata.user}')] and .//span[contains(text(), '{solutiondata.task_name}')] and .//span[contains(text(), '{solutiondata.language}')] and .//span[contains(text(), '{solutiondata.submission_date}')]]")
+
+        printInfo(f"Прошлое решение найдено")
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Обновлённое решение не найдено")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    try:
+        # Извлекаем все ячейки из строки таблицы
+        cells = row.find_elements(By.TAG_NAME, "td")
+        verdicts = cells[4].text.split('\n')
+        verdictNew = verdictMaker(verdicts[1])
+        if verdictNew == "Ожидание вердикта":
+            printInfo("У решения обновился вердикт")
+        else:
+            printExeption("У решения не обновился вердикт")
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Вердикты обновлённого решения не найдены")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    printSuccess(f"Удаление вердикта работает")
+    return True
+
+
 def searchElementOfTable(browser):
     try:
         elements = WebDriverWait(browser, 20).until(
@@ -986,5 +1143,7 @@ def verdictMaker(verdict):
         return "Свяжитесь с преподавателем"
     if verdict == "Cheated":
         return "Списано"
+    if verdict == "Pending":
+        return "Ожидание вердикта"
     else:
         return verdict
