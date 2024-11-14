@@ -136,7 +136,7 @@ class TestTeacher(unittest.TestCase):
         self.assertTrue(result, "Тест не пройден")
 
     def test_postmoderation_management(self):
-        result = postmoderation_management(self.browser)
+        result = postmoderation_management(self.browser, "Принято")
         self.assertTrue(result, "Тест не пройден")
 
     def tearDown(self):
