@@ -9,8 +9,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+from datetime import datetime
 import sys
 from Exeptions import *
+from Queue import go_to_the_queue_tab
 
 class Task:
     def __init__(self, name, points):
@@ -34,6 +36,11 @@ class Module:
         self.pointCountCurrent = pointCountCurrent
         self.pointCountAll = pointCountAll
         self.section = section
+
+class Solution:
+    def __init__(self, solution, language):
+        self.solution = solution
+        self.language = language
 
 def tasks(browser, module):
     # Тесты
@@ -256,82 +263,6 @@ def set_t_filter(browser, filters: list, task: Task):
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Сообщение ошибки: {e}")
 
-
-def script_making_a_solution_of_task(browser, task):
-
-    go_to_the_tasks_tab(browser)
-
-# Поиск задачи
-    try:
-        searchButton = WebDriverWait(browser, 10).until(
-            EC.element_to_be_clickable(
-                (By.XPATH, "/html/body/div/div/div[2]/div[3]/form/div/div[1]/div/div[2]/div[1]/span/input"))
-        )
-
-        for char in task.name:
-            searchButton.send_keys(char)
-            time.sleep(0.1)
-
-    except Exception as e:
-        printExeption(f"Тип ошибки: {type(e).__name__}")
-        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
-        return False
-
-# Вход в описание задачи
-    try:
-        taskButton = WebDriverWait(browser, 10).until(
-            EC.element_to_be_clickable(
-                (By.XPATH, f"//p[@class='Paragraph_paragraph__vZceR' and text()='{task.name}']"))
-        )
-        taskButton.click()
-
-    except (TimeoutException, NoSuchElementException):
-        printExeption(
-            f"Ошибка: Задача '{task.name}' не была найдена или не стала доступной.")
-        return False
-    except Exception as e:
-        printExeption(f"Тип ошибки: {type(e).__name__}")
-        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
-        return False
-
-# Нажатие "Отправить"
-    try:
-        sendButton = WebDriverWait(browser, 10).until(
-            EC.element_to_be_clickable((
-                By.XPATH, "//button[contains(@class, 'ant-btn') and contains(@class, 'Button_button__4z3Rc') and span[text()='Отправить']]"
-            ))
-        )
-        sendButton.click()
-    except Exception as e:
-        printExeption(f"Тип ошибки: {type(e).__name__}")
-        printExeption(f"Ошибка: Ошибка поиска кнопки 'Отправить'. {e}")
-        return False
-
-    try:
-        language = WebDriverWait(browser, 10).until(
-            EC.element_to_be_clickable((
-                By.XPATH, '/html/body/div/div/div[2]/div/div/form/div/div[2]/div[1]/div/div[1]/div/div[1]/div[3]/input'
-            ))
-        )
-        language.click()
-        language.send_keys("C++")
-        language.send_keys(Keys.ENTER)
-
-        SendSolutionButton = WebDriverWait(browser, 10).until(
-            EC.element_to_be_clickable((
-                By.XPATH,
-                "//button[contains(@class, 'ant-btn') and contains(@class, 'Button_button__4z3Rc') and contains(@class, 'Button_button_type_accent__NGYDO') and span[text()='Отправить решение']]"
-            ))
-        )
-        SendSolutionButton.click()
-        printSuccess(f"Решение создано")
-
-    except Exception as e:
-        printExeption(f"Тип ошибки: {type(e).__name__}")
-        printExeption(f"Ошибка: Ошибка отправки решения. {e}")
-        return False
-
-
 def viewing_task_details(browser, section):
     solution = 0 # переменная для определения выполнения теста страницы последнего решения
     # Поиск задачи
@@ -528,7 +459,7 @@ def last_solution(browser, section):
         printInfo(f"Решение: {code_text[:50]}...")
 
     except (TimeoutException, NoSuchElementException):
-        printExeption(f"Вердикт не найден")
+        printExeption(f"Решение не найдено")
         return False
     except Exception as e:
         printExeption(f"Тип ошибки: {type(e).__name__}")
@@ -537,3 +468,196 @@ def last_solution(browser, section):
 
     printSuccess("Детали попытки доступны для просмотра")
     return True
+
+
+def time_now():
+    now = datetime.now()
+    formatted_datetime = now.strftime("%d.%m.%Y %H:%M:%S")
+    return formatted_datetime
+
+
+def making_a_solution_of_task(browser, task, solution):
+
+    go_to_the_tasks_tab(browser)
+
+# Поиск задачи
+    try:
+        searchButton = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "/html/body/div/div/div[2]/div[3]/form/div/div[1]/div/div[2]/div[1]/span/input"))
+        )
+
+        for char in task.name:
+            searchButton.send_keys(char)
+            time.sleep(0.05)
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(
+            f"Поле поиска не было найдено")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+
+# Вход в описание задачи
+    try:
+        taskButton = WebDriverWait(browser, 20).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, f"//p[@class='Paragraph_paragraph__vZceR' and text()='{task.name}']"))
+        )
+        taskButton.click()
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(
+            f"Ошибка: Задача '{task.name}' не была найдена или не стала доступной.")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+
+# Нажатие "Отправить"
+    try:
+        sendButton = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((
+                By.XPATH, "//button[contains(@class, 'ant-btn') and contains(@class, 'Button_button__4z3Rc') and span[text()='Отправить']]"
+            ))
+        )
+        sendButton.click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(
+            f"Ошибка: Кнопка 'Отправить' не была найдена")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска кнопки 'Отправить'. {e}")
+        return False
+# Установка языка
+    try:
+        language = WebDriverWait(browser, 10).until(
+        EC.element_to_be_clickable((By.CLASS_NAME, "Select_select__control__Z4598"))
+        )
+        browser.execute_script("arguments[0].scrollIntoView();", language)
+        language.click()
+        WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((By.XPATH, f"//div[contains(text(), '{solution.language}')]"))
+        ).click()
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(
+            f"Ошибка при вводе языка")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+# Ввод решения
+    try:
+        text_area = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".ace_text-input"))
+        )
+
+        text_area.send_keys(solution.solution)
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(
+            f"Ошибка при вводе решения")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+
+    try:
+        SendSolutionButton = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((
+                By.XPATH,
+                "//button[contains(@class, 'ant-btn') and contains(@class, 'Button_button__4z3Rc') and contains(@class, 'Button_button_type_accent__NGYDO') and span[text()='Отправить решение']]"
+            ))
+        )
+        SendSolutionButton.click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Ошибка отправки решения")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+    # -------------- Ожидание notification и перезагрузка страницы --------------
+    try:
+        timeNow = time_now()
+        WebDriverWait(browser, 20).until(
+            EC.presence_of_element_located((By.XPATH,
+                                            "//div[contains(@class, 'ant-notification-notice-message')]//p[contains(text(), 'Решение успешно отправлено')]"))
+        )
+        printSuccess("Решение успешно создано")
+        return True
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Уведомление не найдено")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+
+def check_solution_in_queue(browser, timeNow, solution):
+
+    # -------------- Переход в очередь и поиск данного решения --------------
+    try:
+        sleep(6)
+        WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc') and span[text()='Обновить страницу']]"))
+        ).click()
+        elements = WebDriverWait(browser, 20).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//tr[contains(@class, 'ant-table-row') and .//a[contains(@class, 'LinkRouter_link_router__UL4Jy QueueTable_cell_link__ZnHtE')]]"))
+        )
+        date_text = elements[0].find_element(By.XPATH, ".//td[contains(@class, 'ant-table-cell')][4]//span").text
+        if date_text >= timeNow:
+            # -------------- Переход в детали --------------
+            try:
+                button_details = elements[0].find_element(By.XPATH, ".//following::button[1]")
+                button_details.click()
+                printInfo(f"Кнопка деталей нажата")
+            except (TimeoutException, NoSuchElementException):
+                printExeption(f"Кнопка деталей не найдена")
+                return False
+            except Exception as e:
+                printExeption(f"Тип ошибки: {type(e).__name__}")
+                printExeption(f"Сообщение ошибки: {e}")
+                return False
+
+            try:
+                code_element = WebDriverWait(browser, 10).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".ace_text-layer"))
+                )
+                # Извлечение текста из найденного элемента
+                code_lines = code_element.find_elements(By.CSS_SELECTOR, ".ace_line")
+                code_text = "\n".join([line.text for line in code_lines])
+
+                code_text = code_text.lstrip('\n')
+                if code_text.startswith('\n'):
+                    code_text = code_text[1:]
+
+                printInfo(f"{code_text}")
+                printInfo(f"{solution.solution}")
+
+            except (TimeoutException, NoSuchElementException):
+                printExeption(f"Вердикт не найден")
+                return False
+            except Exception as e:
+                printExeption(f"Тип ошибки: {type(e).__name__}")
+                printExeption(f"Сообщение ошибки: {e}")
+                return False
+        else:
+            printExeption(f"Созданное решение не найдено")
+            return False
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Ошибка поиска решения в очереди")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")

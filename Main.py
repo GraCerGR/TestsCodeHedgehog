@@ -97,6 +97,12 @@ class TestTeacher(unittest.TestCase):
                     '10.09.2024 17:02:38'), "Teacher")
         self.assertTrue(result, "Тест не пройден")
 
+    def test_create_task(self):
+        result = making_a_solution_of_task(self.browser, Task(
+                                  'Найти первые N простых чисел',
+                                  123), Solution(f"a, b = map(int, input().split())\nresult = a + b\nprint(result)", "C++"))
+        self.assertTrue(result, "Тест не пройден")
+
     def test_tasks(self):
         result = tasks(self.browser, Module('Арифметика',
                       0,
