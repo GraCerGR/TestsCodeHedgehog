@@ -141,10 +141,6 @@ class TestTeacher(unittest.TestCase):
         result = users(self.browser, "test-admin", "Преподаватели", "Teacher")
         self.assertTrue(result, "Тест не пройден")
 
-    def test_postmoderation_management(self):
-        result = postmoderation_management(self.browser, "Принято")
-        self.assertTrue(result, "Тест не пройден")
-
     def tearDown(self):
         self.browser.quit()
 
@@ -166,6 +162,21 @@ class TestStudent_On_Main_Site(unittest.TestCase):
         filter3 = set_p_filter(self.browser, ['C# (mono 6.12)'], 'Из списка\u00a0рёбер\u00a0в список смежности\u00a0')
         filter4 = set_p_filter(self.browser, ['Python3 (python 3.12)'], 'Нахождение элемента в массиве, который больше своих соседей')
         self.assertTrue(filter1 and filter2 and filter3 and filter4, "Тест не пройден")
+
+    def tearDown(self):
+        self.browser.quit()
+
+
+class TestTeacher_On_Main_Site(unittest.TestCase):
+
+    def setUp(self):
+        self.browser = webdriver.Chrome()
+        login_to_profile_without_TSUAccount(self.browser,SITELINK2, USERNAME2, PASSWORD)
+        login_to_class(self.browser, 'Программирование(Тестовый класс для Фич)')
+
+    def test_postmoderation_management(self):
+        result = postmoderation_management(self.browser, "Принято")
+        self.assertTrue(result, "Тест не пройден")
 
     def tearDown(self):
         self.browser.quit()

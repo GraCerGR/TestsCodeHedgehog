@@ -591,6 +591,7 @@ def making_a_solution_of_task(browser, task, solution):
             EC.presence_of_element_located((By.XPATH,
                                             "//div[contains(@class, 'ant-notification-notice-message')]//p[contains(text(), 'Решение успешно отправлено')]"))
         )
+        # check_solution_in_queue(browser, timeNow, solution)
         printSuccess("Решение успешно создано")
         return True
     except (TimeoutException, NoSuchElementException):
