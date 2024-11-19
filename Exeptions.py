@@ -11,6 +11,12 @@ def get_caller_function_name():
     caller = stack[2]
     return caller.function
 
+def indent(): # Отступы для иерархии выводов
+    stack_depth = len(inspect.stack()) - 1  # -1, чтобы исключить текущую функцию
+    indent = ' ' * (stack_depth * 2)  # Определяем отступ (например, 2 пробела на уровень)
+    indent = indent.replace("                               ", "")
+    return indent
+
 def check(expectation, actual, place):
     if expectation == actual:
         print(f"[{get_caller_function_name()}] Данные в {place} совпадают.")

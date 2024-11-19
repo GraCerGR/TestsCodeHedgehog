@@ -17,6 +17,7 @@ from Queue import *
 from Users import *
 from Rating import *
 from Postmoderation import *
+from  PostmoderationManagement import *
 
 class TestStudent(unittest.TestCase):
 
