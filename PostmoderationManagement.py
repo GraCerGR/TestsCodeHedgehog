@@ -22,33 +22,33 @@ def postmoderation_management(browser, verdict):
     #if not making_a_solution_for_tests(browser):
     #    return False
 
-    if not go_to_the_postmoderation_tab(browser):
-        return False
-    if not viewing_tests(browser):
-        return False
-    return False
     # Переотправку решения делаю в очереди, т. к. предсозданная задача с автоматической установкой вердикта
     if not go_to_the_queue_tab(browser):
         return False
     if not resending_the_students_decision(browser):
         return False
-
+    print()
     sleep(30)  # Задержка для успешной компиляции и выставления вердикта
     if not update_page(browser):
         printExeption("Ошибка обновления страницы")
         return False
+
+    print()
     # Удаление вердикта делаю в очереди, т. к. в постмодерации у всех решений не вердикта
     if not go_to_the_queue_tab(browser):
         return False
     if not issuing_a_delete_verdict(browser):
         return False
+    print()
 
     if not go_to_the_postmoderation_tab(browser):
         return False
     if not viewing_tests(browser):
         return False
+    print()
     if not issuing_a_verdict(browser, verdict):
         return False
+    print()
 
     # Просмотр тестов - Чтобы элементы с пройденными классами отображались, нужен рабочий компилятор. На текущий момент класса с ролью преподавателя и рабочим компилятором нет. Единственный выход - смотреть тесты в классе с ролью студента.
     # Просмотр деталей тестов - Чтобы элемент с деталями тестов отображался, нужен рабочий компилятор и роль преподавателя. На текущий момент класса с ролью преподавателя и рабочим компилятором нет.
@@ -598,7 +598,58 @@ def viewing_tests(browser):
         printExeption(f"Сообщение ошибки: {e}")
         return False
 
+    try:
+        metadataFields = WebDriverWait(browser, 10).until(
+            EC.presence_of_all_elements_located((By.CLASS_NAME, "Metadata_metadata__o4DDl"))
+        )
 
+        for field in metadataFields:
+            nameMetadata = field.find_element(By.CSS_SELECTOR, "p.Metadata_metadata__name__uxggn").text
+            textMetadata = field.find_element(By.CSS_SELECTOR, "p.Metadata_metadata__value__bhwUV").text
+            if len(textMetadata) > 100:
+                textMetadata = textMetadata[:100] + "..."
+
+            printInfo(f"{nameMetadata}: {textMetadata}")
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Метаданные теста не найдены")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+        return False
+
+    try:
+        blueInfoField = second_element.find_element(By.CSS_SELECTOR, ".FactsBlock_facts_block__dmWEx.ant-flex.css-14h5sa0.ant-flex-align-center")
+        info = blueInfoField.find_elements(By.TAG_NAME, 'p')
+        for i in info:
+            printInfo(f"{i.text}")
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Заголовок деталей теста не найден")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+        return False
+
+    # Выход
+    try:
+        sleep(1)
+        second_element.find_element(By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc')]/span[text()='Закрыть']").click()
+        print("sdfbhjkl")
+        sleep(0.5)
+        mainFieldPostmoderation.find_element(By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc')]/span[text()='Закрыть']").click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Кнопка выхода не найдена")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+        return False
+
+    printSuccess(f"Просмотр деталей тестов решения функционирует")
+    return True
 
 def searchElementOfTable(browser):
     try:
