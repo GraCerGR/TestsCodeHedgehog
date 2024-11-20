@@ -549,6 +549,9 @@ def viewing_tests(browser):
     printSuccess(f"Просмотр тестов решения функционирует")
 
 # -------------- Проверка деталей тестов --------------
+    mainFieldPostmoderation = WebDriverWait(browser, 10).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, ".ant-drawer-body.Drawer_body__eSiGt"))
+    )
     try:
         allButtons = acceptButtons + errorButtons
         if allButtons:
@@ -565,6 +568,37 @@ def viewing_tests(browser):
         return False
 
     sleep(0.5)
+
+    # Поиск окна тестов
+    # Всплывающие окна имеют одинаковые классы, поэтому нахожу сначала окно с деталями решения, потом все всплывающие окна (их получается 2)
+    # и вытаскиваю из них окно с деталями решения, получая окно деталей теста
+    try:
+        allMainFieldPostmoderation = WebDriverWait(browser, 10).until(
+            EC.visibility_of_all_elements_located((By.CSS_SELECTOR, ".ant-drawer-body.Drawer_body__eSiGt"))
+        )
+        allMainFieldPostmoderation.remove(mainFieldPostmoderation)
+        second_element = allMainFieldPostmoderation[0]
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Окно деталей тестов не найдено")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+        return False
+
+    try:
+        taskName = second_element.find_element(By.CSS_SELECTOR, ".Title_title__Hbrke.Title_title_level_3__qwYsi").text
+        printInfo(f"Заголовок деталей теста: {taskName}")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Заголовок деталей теста не найден")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+        return False
+
+
 
 def searchElementOfTable(browser):
     try:
