@@ -196,12 +196,14 @@ def issuing_a_verdict(browser, verdict):
         printExeption(f"Сообщение ошибки: {e}")
 
     try:
-        verdictList = WebDriverWait(browser, 10).until(
-            EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'ant-flex') and (descendant::button[span[text()='Принято']] or descendant::button[span[text()='Отклонено']] or descendant::button[span[text()='Свяжитесь с преподавателем']] or descendant::button[span[text()='Списано']])]"))
+        sleep(1)
+        verdictListChildren = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'VerdictSection_current_verdict__K-ILx') and contains(@class, 'ant-flex') and contains(@class, 'css-14h5sa0') and contains(@class, 'ant-flex-align-center') and contains(@class, 'ant-flex-justify-space-between')]"))
         )
+        verdictList = verdictListChildren.find_element(By.XPATH, "./..")
         verdictList.find_element(By.XPATH, f"//button[span[text()='{verdict}']]").click()
     except (TimeoutException, NoSuchElementException):
-        printExeption("Список решений не найден")
+        printExeption("Список вердиктов не найден")
         return False
     except Exception as e:
         # Выводим тип ошибки и сообщение
@@ -635,11 +637,12 @@ def viewing_tests(browser):
 
     # Выход
     try:
+        exit = WebDriverWait(browser, 10).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc')]/span[text()='Закрыть']"))
+        )
+        exit[1].click()
         sleep(1)
-        second_element.find_element(By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc')]/span[text()='Закрыть']").click()
-        print("sdfbhjkl")
-        sleep(0.5)
-        mainFieldPostmoderation.find_element(By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc')]/span[text()='Закрыть']").click()
+        exit[0].click()
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Кнопка выхода не найдена")
         return False
