@@ -17,7 +17,8 @@ from Queue import *
 from Users import *
 from Rating import *
 from Postmoderation import *
-from  PostmoderationManagement import *
+from PostmoderationManagement import *
+from Result import *
 
 class TestStudent(unittest.TestCase):
 
@@ -178,6 +179,10 @@ class TestTeacher_On_Main_Site(unittest.TestCase):
     def test_postmoderation_management(self):
         result = postmoderation_management(self.browser, "Принято")
         self.assertTrue(result, "Тест не пройден")
+
+    def test_result(self):
+        res = result(self.browser, User("Срибный Григорий", "Преподаватели"))
+        self.assertTrue(res, "Тест не пройден")
 
     def tearDown(self):
         self.browser.quit()

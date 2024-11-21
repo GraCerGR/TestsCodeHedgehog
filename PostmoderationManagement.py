@@ -19,8 +19,8 @@ def postmoderation_management(browser, verdict):
     printInfo(f"Начало теста процесса постмодерации")
 
     # Для лучшего теста нужно заранее хоть одно решение создать
-    #if not making_a_solution_for_tests(browser):
-    #    return False
+    if not making_a_solution_for_tests(browser):
+        return False
 
     # Переотправку решения делаю в очереди, т. к. предсозданная задача с автоматической установкой вердикта
     if not go_to_the_queue_tab(browser):
