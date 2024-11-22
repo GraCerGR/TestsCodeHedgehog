@@ -15,13 +15,25 @@ class User:
         self.name = name
         self.role = role
 
+class TaskInRating:
+    def __init__(self, moduleName, sectionName, taskName):
+        self.moduleName = moduleName
+        self.sectionName = sectionName
+        self.taskName = taskName
 
-def result(browser, user: User):
+def result(browser, user: User, task):
     printInfo(f"Начало теста страницы рейтинга")
     if not go_to_the_result_tab(browser, user):
         return False
+    print()
+
     if not displaying_modules_and_sections_names(browser):
         return False
+    print()
+
+    if not displaying_tasks_with_attempts(browser, task):
+        return False
+    return True
 
 
 # Переход на вкладку "Результаты"
@@ -129,12 +141,13 @@ def displaying_modules_and_sections_names(browser):
         for module in modules:
             moduleName = module.find_element(By.CSS_SELECTOR,
                                                 'p.Paragraph_paragraph__vZceR.Paragraph_paragraph_weight_bold__uSpls').text.strip()
-            printInfo(f"Название модуля: {moduleName}")
-
+            printInfo(f"Модйль найден: {moduleName}")
+            sectionNames = []
             sections = module.find_elements(By.CLASS_NAME, 'SectionStructure_section_structure_button__zUl-G')
             for section in sections:
                 sectionName = section.find_element(By.CSS_SELECTOR, 'p.Paragraph_paragraph__vZceR.Paragraph_paragraph_weight_bold__uSpls').text
-                print("Название секции:", sectionName)
+                sectionNames.append(sectionName)
+            printInfo(f"Секции модуля: {sectionNames}")
 
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Поля информации о результатах (название модулей, секции) не найдены")
@@ -143,3 +156,65 @@ def displaying_modules_and_sections_names(browser):
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
         return False
+    printSuccess(f"Страница результатов с модулями и секциями отображается корректно")
+    return True
+
+# Отображение задач, имеющих хотя бы одну попытку, в секции
+def displaying_tasks_with_attempts(browser, task: TaskInRating):
+    try:
+        module = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH,f"//div[contains(@class, 'ModuleStructure_module_structure__Dd7NK')]"
+                                                     f"//div[contains(@class, 'ModuleStructure_module_header__vzobJ')]"
+                                                     f"//p[contains(@class, 'Paragraph_paragraph__vZceR') and "
+                                                     f"contains(@class, 'Paragraph_paragraph_weight_bold__uSpls') and "
+                                                     f"text()='{task.moduleName}']"))
+        )
+        printInfo(f"Модуль '{task.moduleName}' найден")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Модуль '{task.moduleName}' не найден")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+
+    try:
+        section = module.find_element(By.XPATH,f"//div[contains(@class, 'SectionStructure_section_structure__oiisl') and .//p[text()='{task.sectionName}']]")
+        printInfo(f"Секция '{task.sectionName}' найдена")
+        section.click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Секция '{task.sectionName}' модуля '{task.moduleName}' не найдена")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+
+    try:
+        taskElement = WebDriverWait(module, 10).until(
+            EC.presence_of_element_located((By.XPATH, f"//tr[contains(@class, 'ant-table-row') "
+                                                      f"and .//a[contains(@class, 'LinkRouter_link_router__UL4Jy ClassTasksSectionTable_cell_link__lOcSE') and //p[text()='{task.taskName}']]]"))
+        )
+        printInfo(f"Задача '{task.taskName}' найдена")
+
+        cells = taskElement.find_elements(By.TAG_NAME, "td")
+
+        data = f"""
+                №: {cells[0].text}, 
+                Имя: {cells[1].text}, 
+                Баллы: {cells[2].text}, 
+                Срок: {cells[3].text}, 
+                Вердикты: {cells[4].text.replace("\n", ", ")},
+                Последний комментарий: {cells[5].text}"""
+
+        printInfo(f"Данные решения найдены: {data}")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Задача '{task.taskName}' не найдена в секции '{task.sectionName}' модуля '{task.moduleName}'")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+
+    printSuccess(f"Отображение задач функционирует")
+    return True
