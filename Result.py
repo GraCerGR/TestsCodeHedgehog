@@ -1,3 +1,4 @@
+from email.header import Header
 from time import sleep
 
 from selenium.common.exceptions import TimeoutException, NoSuchElementException, InvalidSelectorException
@@ -31,8 +32,22 @@ def result(browser, user: User, task):
         return False
     print()
 
-    if not displaying_tasks_with_attempts(browser, task):
+    taskElement = displaying_tasks_with_attempts(browser, task)
+    if not taskElement:
         return False
+    print()
+
+    if not displaying_a_page_with_a_history_of_solutions(browser, taskElement, task):
+        return False
+
+    print()
+    if not go_to_the_page_with_details_task_by_clicking_on_taskname(browser, task):
+        return False
+    print()
+
+    if not go_to_the_results_page_when_clicking_on_the_link(browser, user):
+        return False
+    print()
     return True
 
 
@@ -109,7 +124,7 @@ def go_to_the_result_tab(browser, user):
             EC.element_to_be_clickable((By.XPATH, ".//h2[contains(text(), 'Результаты')]"))
         )
         WebDriverWait(resultHead, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "//div[contains(@class, 'ant-flex') and contains(., 'Пользователь:') and .//a[contains(text(), 'Срибный Григорий')]]"))
+            EC.element_to_be_clickable((By.XPATH, f"//div[contains(@class, 'ant-flex') and contains(., 'Пользователь:') and .//a[contains(text(), '{user.name}')]]"))
         )
 
     except (TimeoutException, NoSuchElementException):
@@ -217,4 +232,155 @@ def displaying_tasks_with_attempts(browser, task: TaskInRating):
         return False
 
     printSuccess(f"Отображение задач функционирует")
+    return taskElement
+
+
+# Отображение страницы с историей решений задачи
+def displaying_a_page_with_a_history_of_solutions(browser, taskElement, task):
+    try:
+        taskElement.click()
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка перехода в историю решений задачи. {e}")
+        return False
+
+    try:
+        WebDriverWait(browser, 15).until(
+            EC.presence_of_element_located((By.XPATH, f"//h3[contains(text(), 'История попыток') and .//a[contains(text(), '{task.taskName}')]]"))
+        )
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Заголовок страницы истории решений не найдено")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка перехода в историю решений задачи. {e}")
+        return False
+
+    try:
+        elements = WebDriverWait(browser, 10).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//tr[contains(@class, 'ant-table-row') and .//a[contains(@class, 'LinkRouter_link_router__UL4Jy SolutionsHistoryPageView_cell_link__VDZ3M')]]"))
+        )
+        count = len(elements)
+        printInfo(f"Решения найдены: {count}")
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Решения не найдены")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    printSuccess(f"Отображение страницы с историей решений задачи работает")
+    return True
+
+
+# Переход на страницу с деталями задачи при нажатии на название
+def go_to_the_page_with_details_task_by_clicking_on_taskname(browser, task):
+    try:
+        header = WebDriverWait(browser, 15).until(
+            EC.presence_of_element_located((By.XPATH, f"//h3[contains(text(), 'История попыток') and .//a[contains(text(), '{task.taskName}')]]"))
+        )
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Заголовок страницы истории решений не найдено")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+
+    try:
+        header.find_element(By.XPATH, f".//a[contains(text(), '{task.taskName}')]").click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Ссылка на детали задачи не найдена")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+
+    try:
+        WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, f"//h2[text()='{task.taskName}']"))
+        )
+        printSuccess(f"Переход на страницу деталей выполнен")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Элемент '{task.taskName}' не найден.")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    try:
+        back_button = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((
+                By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc') and span[text()='Назад']]"
+            ))
+        )
+        back_button.click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Элемент 'Назад' не найден.")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Выход из деталей задачи не выполнен: {e}")
+
+    printSuccess(f"Переход на страницу деталей задачи работает")
+    return True
+
+# Переход на страницу результатов при нажатии на имя пользователя (по факту, при нажатии на ссылку "Перейти к общим результатам пользователя")
+def go_to_the_results_page_when_clicking_on_the_link(browser, user):
+    try:
+        WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((
+                By.XPATH, "//a[contains(@class, 'LinkRouter_link_router__UL4Jy') and contains(@class, 'LinkRouter_link_router_color_accent__A9aLX') and contains(., 'Перейти к общим результатам пользователя')]"
+            ))
+        ).click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Ссылка перехода к общим результатам не найдена")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Выход из деталей задачи не выполнен: {e}")
+
+    try:
+        resultHead = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((By.XPATH,
+                                       "//div[contains(@class, 'ResultsUserPageHeader_results_user_page_header__ww3Rh')]"))
+        )
+        WebDriverWait(resultHead, 10).until(
+            EC.element_to_be_clickable((By.XPATH, ".//h2[contains(text(), 'Результаты')]"))
+        )
+        WebDriverWait(resultHead, 10).until(
+            EC.element_to_be_clickable((By.XPATH, f"//div[contains(@class, 'ant-flex') and contains(., 'Пользователь:') and .//a[contains(text(), '{user.name}')]]"))
+        )
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Поля информации о результатах (заголовок, имя пользователя) не найдены")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+
+    try:
+        back_button = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((
+                By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc') and span[text()='Назад']]"
+            ))
+        )
+        back_button.click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Элемент 'Назад' не найден.")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Выход из деталей задачи не выполнен: {e}")
+
+    printInfo(f"Страница результатов пользователя '{user.name}' открыта")
+    printSuccess(f"Переход на страницу результатов при нажатии на имя пользователя (ссылку) работает")
     return True
