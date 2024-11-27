@@ -58,7 +58,7 @@ def go_to_the_result_tab(browser, user):
             EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[2]/div[2]/button[5]"))
         ).click()
     except Exception:
-        printExeption(f"Ошибка: Кнопка Рейтинг не была найдена или не стала доступной.")
+        printExeption(f"Ошибка: Кнопка Пользователи не была найдена или не стала доступной.")
         return False
 
     try:
@@ -207,8 +207,7 @@ def displaying_tasks_with_attempts(browser, task: TaskInRating):
 
     try:
         taskElement = WebDriverWait(module, 10).until(
-            EC.presence_of_element_located((By.XPATH, f"//tr[contains(@class, 'ant-table-row') "
-                                                      f"and .//a[contains(@class, 'LinkRouter_link_router__UL4Jy ClassTasksSectionTable_cell_link__lOcSE') and //p[text()='{task.taskName}']]]"))
+            EC.presence_of_element_located((By.XPATH, f"//tr[contains(@class, 'ant-table-row') and contains(@class, 'ant-table-row-level-0') and td[2]//p[text()='{task.taskName}']]"))
         )
         printInfo(f"Задача '{task.taskName}' найдена")
 

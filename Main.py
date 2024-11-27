@@ -1,4 +1,6 @@
 import logging
+
+from click import option
 from selenium import webdriver
 import time
 from selenium.webdriver.common.by import By
@@ -19,6 +21,7 @@ from Rating import *
 from Postmoderation import *
 from PostmoderationManagement import *
 from Result import *
+from Comments import *
 
 class TestStudent(unittest.TestCase):
 
@@ -181,7 +184,12 @@ class TestTeacher_On_Main_Site(unittest.TestCase):
         self.assertTrue(result, "Тест не пройден")
 
     def test_result(self):
-        res = result(self.browser, User("Срибный Григорий", "Преподаватели"),
+        res = result(self.browser, User("Срибный Григорий Романович", "Студенты"),
+                     TaskInRating('Основы программирования (Модуль 1) (модуль 1)', 'Присваивание и арифметика', 'Hello, world!'))
+        self.assertTrue(res, "Тест не пройден")
+
+    def test_comment(self):
+        res = comments(self.browser, User("Срибный Григорий Романович", "Студенты"),
                      TaskInRating('Основы программирования (Модуль 1) (модуль 1)', 'Присваивание и арифметика', 'Hello, world!'))
         self.assertTrue(res, "Тест не пройден")
 
