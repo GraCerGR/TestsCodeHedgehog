@@ -1,5 +1,6 @@
 from email.header import Header
 from time import sleep
+from datetime import datetime
 
 from selenium.common.exceptions import TimeoutException, NoSuchElementException, InvalidSelectorException
 from selenium import webdriver
@@ -9,6 +10,9 @@ from selenium.webdriver.ie.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from Exeptions import *
+from settings import *
+from Login import *
+from Class import *
 import time
 from selenium.webdriver import ActionChains
 
@@ -23,17 +27,27 @@ class TaskInRating:
         self.sectionName = sectionName
         self.taskName = taskName
 
-def comments(browser, user: User, task):
-    printInfo(f"Начало теста страницы рейтинга")
+def create_comments(browser, user: User, task, commentPrivate):
+    printInfo(f"Начало теста создания комментариев")
     if not go_to_the_history_tab(browser, user, task):
         return False
     print()
 
-    if not comment_maker(browser, "public"):
+    newComment = comment_maker(browser, commentPrivate)
+    if not newComment:
         return False
     print()
 
+    printInfo(
+        f"ВНИМАНИЕ! Для выполнения данного теста необходимо указать USERNAME и PASSWORD пользователя '{user.name}'")
+    test_comments_in_new_browser_window(SITELINK2, USERNAME, PASSWORD, newComment)
+
     return True
+
+def test_comments_in_new_browser_window(SITELINK, USERNAME, PASSWORD, comment):
+    if not create_new_browser_window(SITELINK, USERNAME, PASSWORD, 'Программирование(Тестовый класс для Фич)'):
+        return False
+    print()
 
 
 # Переход в историю решений
@@ -197,10 +211,10 @@ def comment_maker(browser, protection):
         commentText = ""
         if (protection == "public"):
             commentProtections[0].click()
-            commentText = "Публичный комментарий"
+            commentText = f"Публичный комментарий от {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}"
         elif (protection == "private"):
             commentProtections[1].click()
-            commentText = "Приватный комментарий"
+            commentText = f"Приватный комментарий от {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}"
         else:
             printExeption("Неверный аргумент приватности комментария")
             return False
@@ -245,11 +259,22 @@ def comment_maker(browser, protection):
         printExeption(f"Ошибка: {e}")
         return False
 
-    printSuccess(f"{commentText.replace(" комментарий", "")} комментарий успешно создан")
-    return True
+    printSuccess(f"{commentText.split(" комментарий")[0]} комментарий успешно создан")
+    return commentText
 
 def scrolling_to_element(browser, element):
     window_height = browser.execute_script("return window.innerHeight;")
     browser.execute_script("arguments[0].scrollIntoView();", element)
     browser.execute_script("window.scrollBy(0, -arguments[0] / 2);", window_height)
     sleep(0.5)
+
+def create_new_browser_window(SITELINK, USERNAME, PASSWORD, CLASS):
+    try:
+        browser = webdriver.Chrome()
+        login_to_profile(browser, SITELINK, USERNAME, PASSWORD)
+        login_to_class(browser, CLASS)
+        printSuccess("Открытие нового окна браузера выполнено успешно")
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка открытия нового окна пользователя: {e}")
+        return False
