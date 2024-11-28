@@ -192,10 +192,13 @@ def comment_maker(browser, protection):
             EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'Segmented_segmented__VNG0y')]"))
         )
         commentProtections = commentProtectionSelector.find_elements(By.TAG_NAME, 'label')
+        commentText = ""
         if (protection == "public"):
             commentProtections[0].click()
+            commentText = "Публичный комментарий"
         elif (protection == "private"):
             commentProtections[1].click()
+            commentText = "Приватный комментарий"
         else:
             printExeption("Неверный аргумент приватности комментария")
             return False
@@ -211,7 +214,7 @@ def comment_maker(browser, protection):
     try:
         comment = browser.find_elements(By.CSS_SELECTOR, '.jodit-wysiwyg[contenteditable="true"]')
         comment = comment[-1]
-        comment.send_keys("Публичный комментарий")
+        comment.send_keys(f"{commentText}")
         sleep(1)
         browser.find_element(By.CSS_SELECTOR, '.CommentAddForm_send_button__E21VQ').click()
         notification = WebDriverWait(browser, 10).until(
@@ -227,7 +230,7 @@ def comment_maker(browser, protection):
 
     try:
         commentNew = WebDriverWait(browser, 10).until(
-            EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'Comment_comment__baGMa') and contains(., 'Срибный Григорий') and .//p[contains(text(), 'Публичный комментарий')]]"))
+            EC.presence_of_element_located((By.XPATH, f"//div[contains(@class, 'Comment_comment__baGMa') and contains(., 'Срибный Григорий') and .//p[contains(text(), '{commentText}')]]"))
         )
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Созданный комментарий не найден")
@@ -236,3 +239,6 @@ def comment_maker(browser, protection):
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Ошибка: {e}")
         return False
+
+    printSuccess(f"{commentText.replace(" комментарий", "")} комментарий успешно создан")
+    return True
