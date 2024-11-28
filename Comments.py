@@ -142,6 +142,8 @@ def go_to_the_history_tab(browser, user, task):
         section = module.find_element(By.XPATH,
                                       f"//div[contains(@class, 'SectionStructure_section_structure__oiisl') and .//p[text()='{task.sectionName}']]")
         printInfo(f"Секция '{task.sectionName}' найдена")
+
+        scrolling_to_element(browser, section)
         section.click()
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Секция '{task.sectionName}' модуля '{task.moduleName}' не найдена")
@@ -156,6 +158,8 @@ def go_to_the_history_tab(browser, user, task):
             EC.presence_of_element_located((By.XPATH, f"//tr[contains(@class, 'ant-table-row') and contains(@class, 'ant-table-row-level-0') and td[2]//p[text()='{task.taskName}']]"))
         )
         printInfo(f"Задача '{task.taskName}' найдена")
+
+        scrolling_to_element(browser, taskElement)
         taskElement.click()
 
     except (TimeoutException, NoSuchElementException):
@@ -166,9 +170,6 @@ def go_to_the_history_tab(browser, user, task):
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
         return False
-
-        printInfo(f"Отображение задач функционирует")
-        return taskElement
 
     try:
         WebDriverWait(browser, 15).until(
@@ -192,6 +193,7 @@ def comment_maker(browser, protection):
             EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'Segmented_segmented__VNG0y')]"))
         )
         commentProtections = commentProtectionSelector.find_elements(By.TAG_NAME, 'label')
+        scrolling_to_element(browser, commentProtectionSelector)
         commentText = ""
         if (protection == "public"):
             commentProtections[0].click()
@@ -214,9 +216,12 @@ def comment_maker(browser, protection):
     try:
         comment = browser.find_elements(By.CSS_SELECTOR, '.jodit-wysiwyg[contenteditable="true"]')
         comment = comment[-1]
+        scrolling_to_element(browser, comment)
         comment.send_keys(f"{commentText}")
         sleep(1)
-        browser.find_element(By.CSS_SELECTOR, '.CommentAddForm_send_button__E21VQ').click()
+        sendButton = browser.find_element(By.CSS_SELECTOR, '.CommentAddForm_send_button__E21VQ')
+        scrolling_to_element(browser, sendButton)
+        sendButton.click()
         notification = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'ant-notification-notice-wrapper')]//p[contains(text(), 'Успешно создано')]"))
         )
@@ -242,3 +247,9 @@ def comment_maker(browser, protection):
 
     printSuccess(f"{commentText.replace(" комментарий", "")} комментарий успешно создан")
     return True
+
+def scrolling_to_element(browser, element):
+    window_height = browser.execute_script("return window.innerHeight;")
+    browser.execute_script("arguments[0].scrollIntoView();", element)
+    browser.execute_script("window.scrollBy(0, -arguments[0] / 2);", window_height)
+    sleep(0.5)

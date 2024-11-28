@@ -9,6 +9,7 @@ from selenium.webdriver.ie.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from Exeptions import *
+from Comments import scrolling_to_element
 import time
 
 class User:
@@ -196,6 +197,7 @@ def displaying_tasks_with_attempts(browser, task: TaskInRating):
     try:
         section = module.find_element(By.XPATH,f"//div[contains(@class, 'SectionStructure_section_structure__oiisl') and .//p[text()='{task.sectionName}']]")
         printInfo(f"Секция '{task.sectionName}' найдена")
+        scrolling_to_element(browser, section)
         section.click()
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Секция '{task.sectionName}' модуля '{task.moduleName}' не найдена")
@@ -237,6 +239,7 @@ def displaying_tasks_with_attempts(browser, task: TaskInRating):
 # Отображение страницы с историей решений задачи
 def displaying_a_page_with_a_history_of_solutions(browser, taskElement, task):
     try:
+        scrolling_to_element(browser, taskElement)
         taskElement.click()
     except Exception as e:
         printExeption(f"Тип ошибки: {type(e).__name__}")
