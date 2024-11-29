@@ -222,6 +222,20 @@ def go_to_the_history_tab(browser, user, task):
 
 def comment_maker(browser, protection):
     try:
+        userNameClass = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "UserSection_user_section__Y45e8"))
+        )
+        username_element = userNameClass.find_element(By.XPATH, ".//p[contains(@class, 'Paragraph_paragraph__vZceR')]")
+        username = username_element.text
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Имя пользователя сессии не найдено")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+    try:
         commentProtectionSelector = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'Segmented_segmented__VNG0y')]"))
         )
@@ -230,10 +244,10 @@ def comment_maker(browser, protection):
         commentText = ""
         if (protection == "public"):
             commentProtections[0].click()
-            commentText = f"Публичный комментарий от {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}"
+            commentText = f"Публичный комментарий от {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} пользователя '{username}'"
         elif (protection == "private"):
             commentProtections[1].click()
-            commentText = f"Приватный комментарий от {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}"
+            commentText = f"Приватный комментарий от {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} пользователя '{username}'"
         else:
             printExeption("Неверный аргумент приватности комментария")
             return False
@@ -260,21 +274,6 @@ def comment_maker(browser, protection):
         )
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Одна из областей создания комментария не найдена (ввод комментария, кнопка, уведомление)")
-        return False
-    except Exception as e:
-        printExeption(f"Тип ошибки: {type(e).__name__}")
-        printExeption(f"Ошибка: {e}")
-        return False
-
-    try:
-        userNameClass = WebDriverWait(browser, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "UserSection_user_section__Y45e8"))
-        )
-        username_element = userNameClass.find_element(By.XPATH, ".//p[contains(@class, 'Paragraph_paragraph__vZceR')]")
-        username = username_element.text
-
-    except (TimeoutException, NoSuchElementException):
-        printExeption(f"Имя пользователя сессии не найдено")
         return False
     except Exception as e:
         printExeption(f"Тип ошибки: {type(e).__name__}")
