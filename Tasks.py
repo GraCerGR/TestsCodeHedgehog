@@ -12,7 +12,6 @@ import time
 from datetime import datetime
 import sys
 from Exeptions import *
-from Queue import go_to_the_queue_tab
 
 class Task:
     def __init__(self, name, points):

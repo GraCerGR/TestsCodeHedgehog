@@ -188,11 +188,17 @@ class TestTeacher_On_Main_Site(unittest.TestCase):
                      TaskInRating('Основы программирования (Модуль 1) (модуль 1)', 'Присваивание и арифметика', 'Hello, world!'))
         self.assertTrue(res, "Тест не пройден")
 
-    def test_comments(self):
-        result_private = create_comments(self.browser, User("Срибный Григорий Романович", "Студенты"),
+    def test_private_comments(self):
+        result = comments(self.browser, User("Срибный Григорий Романович", "Студенты"),
                      TaskInRating('Основы программирования (Модуль 1) (модуль 1)', 'Присваивание и арифметика', 'Hello, world!'),
                        "private")
-        self.assertTrue(result_private, "Тест не пройден")
+        self.assertTrue(result, "Тест не пройден")
+
+    def test_public_comments(self):
+        result = comments(self.browser, User("Срибный Григорий Романович", "Студенты"),
+                     TaskInRating('Основы программирования (Модуль 1) (модуль 1)', 'Присваивание и арифметика', 'Hello, world!'),
+                       "public")
+        self.assertTrue(result, "Тест не пройден")
 
     def tearDown(self):
         self.browser.quit()

@@ -13,6 +13,7 @@ from Exeptions import *
 from settings import *
 from Login import *
 from Class import *
+from Tasks import go_to_the_tasks_tab
 import time
 from selenium.webdriver import ActionChains
 
@@ -27,8 +28,8 @@ class TaskInRating:
         self.sectionName = sectionName
         self.taskName = taskName
 
-def create_comments(browser, user: User, task, commentPrivate):
-    printInfo(f"Начало теста создания комментариев")
+def comments(browser, user: User, task, commentPrivate):
+    printInfo(f"Начало теста комментариев")
     if not go_to_the_history_tab(browser, user, task):
         return False
     print()
@@ -38,16 +39,34 @@ def create_comments(browser, user: User, task, commentPrivate):
         return False
     print()
 
+    browser.quit()
     printInfo(
         f"ВНИМАНИЕ! Для выполнения данного теста необходимо указать USERNAME и PASSWORD пользователя '{user.name}'")
-    test_comments_in_new_browser_window(SITELINK2, USERNAME, PASSWORD, newComment)
+    if not test_comments_in_new_browser_window(task, newComment, commentPrivate):
+        return False
 
     return True
 
-def test_comments_in_new_browser_window(SITELINK, USERNAME, PASSWORD, comment):
-    if not create_new_browser_window(SITELINK, USERNAME, PASSWORD, 'Программирование(Тестовый класс для Фич)'):
+def test_comments_in_new_browser_window(task, comment, commentPrivate):
+
+    browser = create_new_browser_window(SITELINK2, USERNAME, PASSWORD, 'Программирование(Тестовый класс для Фич)')
+    if not browser:
         return False
     print()
+
+    if not go_to_the_tasks_tab(browser):
+        return False
+    print()
+
+    if not search_by_task_name(browser, task):
+        return False
+    print()
+
+    if not check_comments(browser, task, comment, commentPrivate):
+        return False
+    print()
+
+    return True
 
 
 # Переход в историю решений
@@ -248,8 +267,23 @@ def comment_maker(browser, protection):
         return False
 
     try:
+        userNameClass = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "UserSection_user_section__Y45e8"))
+        )
+        username_element = userNameClass.find_element(By.XPATH, ".//p[contains(@class, 'Paragraph_paragraph__vZceR')]")
+        username = username_element.text
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Имя пользователя сессии не найдено")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+
+    try:
         commentNew = WebDriverWait(browser, 10).until(
-            EC.presence_of_element_located((By.XPATH, f"//div[contains(@class, 'Comment_comment__baGMa') and contains(., 'Срибный Григорий') and .//p[contains(text(), '{commentText}')]]"))
+            EC.presence_of_element_located((By.XPATH, f"//div[contains(@class, 'Comment_comment__baGMa') and contains(., '{username}') and .//p[contains(text(), '{commentText}')]]"))
         )
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Созданный комментарий не найден")
@@ -274,7 +308,130 @@ def create_new_browser_window(SITELINK, USERNAME, PASSWORD, CLASS):
         login_to_profile(browser, SITELINK, USERNAME, PASSWORD)
         login_to_class(browser, CLASS)
         printSuccess("Открытие нового окна браузера выполнено успешно")
+        return browser
     except Exception as e:
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Ошибка открытия нового окна пользователя: {e}")
         return False
+
+def search_by_task_name(browser, task: TaskInRating):
+    try:
+        searchButton = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "/html/body/div/div/div[2]/div[3]/form/div/div[1]/div/div[2]/div[1]/span/input"))
+        )
+
+        for char in task.taskName:
+            searchButton.send_keys(char)
+            time.sleep(0.1)
+
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+
+    try:
+        WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, f"//button[contains(@class, 'SectionStructure_section_structure_button__ZU4zy') and "
+                           f".//p[text()='{task.sectionName}'] and "
+                           f".//following::p[text()='{task.taskName}']]"))
+        )
+        printInfo(f"Задача найдена")
+        return True
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(
+            f"Ошибка: Секция '{task.sectionName}' с задачей '{task.taskName}' не была найдена или не стала доступной.")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+
+def check_comments(browser, task: TaskInRating, comment, private):
+    try:
+        taskElement = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, f"//tr[contains(@class, 'ant-table-row') and contains(@class, 'ant-table-row-level-0') and td[2]//p[text()='{task.taskName}']]"))
+        )
+        printInfo(f"Задача '{task.taskName}' найдена")
+
+        cells = taskElement.find_elements(By.TAG_NAME, "td")
+
+        lastCommentCell = cells[5].text
+
+        if private == "private":
+            if lastCommentCell == comment:
+                printExeption(f"Приватный комментарий отображается в последнем комментарии задачи")
+                return False
+            else:
+                printInfo(f"Приватный комментарий не отобразился в последнем комментарии задачи")
+                printInfo(f"Отображаемый комментарий: {lastCommentCell}")
+        elif private == "public":
+            if lastCommentCell == comment:
+                printInfo(f"Публичный комментарий отобразился в последнем комментарии задачи")
+                printInfo(f"Отображаемый комментарий: {lastCommentCell}")
+            else:
+                printExeption(f"Публичный комментарий не отображается в последнем комментарии задачи")
+                return False
+        else:
+            printExeption("Параметр private комментария задан неккоректно")
+            return False
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Задача '{task.taskName}' или её комментарий не найден")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+
+    try:
+        scrolling_to_element(browser, taskElement)
+        taskElement.click()
+        taskTitle = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, f"//h2[text()='{task.taskName}']"))
+        )
+        printInfo(f"Переход на страницу деталей выполнен")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Элемент '{task.taskName}' не найден.")
+        return False
+    except Exception as e:
+        # Выводим тип ошибки и сообщение
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+
+    try:
+        linkToLastSolution = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, f"//div[contains(@class, 'TaskClassVerdicts_solution_link__7OKmA') and //p[text()='Перейти к моему последнему решению']]"))
+        )
+        linkToLastSolution.click()
+        WebDriverWait(browser, 10).until(
+            EC.visibility_of_element_located((By.XPATH, f"//h2[contains(text(), 'Постмодерация') and .//a[text()='{task.taskName}']]"))
+        )
+        printInfo(f"Переход в постмодерацию задачи '{task.taskName}' выполнен")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Заголовок не найден, или название задачи не соответствует заголовку")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+        return False
+
+    try:
+        WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, f"//div[contains(@class, 'Comment_comment__baGMa') and .//p[contains(text(), '{comment}')]]"))
+        )
+        printInfo(f"Публичный комментарий найден")
+    except (TimeoutException, NoSuchElementException):
+        if private == "private":
+            printInfo(f"Приватный комментарий не найден")
+        elif private == "public":
+            printExeption(f"Публичный комментарий не найден")
+            return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Сообщение ошибки: {e}")
+        return False
+    printSuccess(f"Отображение {"приватных" if private == "private" else "публичных" if private == "public" else "неизвестных"} комментариев функционирует исправно")
+    return True

@@ -465,7 +465,6 @@ def displaying_the_page_with_details(browser, task_name):
         )
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Заголовок не найден, или название задачи не соответствует заголовку")
-
     except Exception as e:
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Сообщение ошибки: {e}")
