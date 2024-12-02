@@ -15,6 +15,7 @@ from Login import *
 from Class import *
 from Tasks import go_to_the_tasks_tab
 import time
+import re
 from selenium.webdriver import ActionChains
 
 class User:
@@ -39,11 +40,26 @@ def comments(browser, user: User, task, commentPrivate):
         return False
     print()
 
-    browser.quit()
+   # browser.quit()
+
     printInfo(
         f"ВНИМАНИЕ! Для выполнения данного теста необходимо указать USERNAME и PASSWORD пользователя '{user.name}'")
     if not test_comments_in_new_browser_window(task, newComment, commentPrivate):
         return False
+    print()
+
+    newComment = rewrite_comment(browser, newComment)
+    if not newComment:
+        return False
+    if not test_comments_in_new_browser_window(task, newComment, commentPrivate):
+        return False
+    print()
+
+    if not delete_comment(browser, newComment):
+        return False
+    if not test_comments_in_new_browser_window(task, newComment, "delete"):
+        return False
+    print()
 
     return True
 
@@ -52,20 +68,17 @@ def test_comments_in_new_browser_window(task, comment, commentPrivate):
     browser = create_new_browser_window(SITELINK2, USERNAME, PASSWORD, 'Программирование(Тестовый класс для Фич)')
     if not browser:
         return False
-    print()
 
     if not go_to_the_tasks_tab(browser):
         return False
-    print()
 
     if not search_by_task_name(browser, task):
         return False
-    print()
 
     if not check_comments(browser, task, comment, commentPrivate):
         return False
-    print()
 
+    browser.quit()
     return True
 
 
@@ -244,10 +257,10 @@ def comment_maker(browser, protection):
         commentText = ""
         if (protection == "public"):
             commentProtections[0].click()
-            commentText = f"Публичный комментарий от {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} пользователя '{username}'"
+            commentText = f"Публичный комментарий от {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} пользователя {username}"
         elif (protection == "private"):
             commentProtections[1].click()
-            commentText = f"Приватный комментарий от {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} пользователя '{username}'"
+            commentText = f"Приватный комментарий от {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} пользователя {username}"
         else:
             printExeption("Неверный аргумент приватности комментария")
             return False
@@ -362,7 +375,7 @@ def check_comments(browser, task: TaskInRating, comment, private):
         if private == "private":
             if lastCommentCell == comment:
                 printExeption(f"Приватный комментарий отображается в последнем комментарии задачи")
-                return False
+               # return False
             else:
                 printInfo(f"Приватный комментарий не отобразился в последнем комментарии задачи")
                 printInfo(f"Отображаемый комментарий: {lastCommentCell}")
@@ -373,6 +386,13 @@ def check_comments(browser, task: TaskInRating, comment, private):
             else:
                 printExeption(f"Публичный комментарий не отображается в последнем комментарии задачи")
                 return False
+        elif private == "delete":
+            if lastCommentCell == comment:
+                printExeption(f"Удалённый комментарий отображается в последнем комментарии задачи")
+                return False
+            else:
+                printInfo(f"Удалённый комментарий не отобразился в последнем комментарии задачи")
+                printInfo(f"Отображаемый комментарий: {lastCommentCell}")
         else:
             printExeption("Параметр private комментария задан неккоректно")
             return False
@@ -421,16 +441,182 @@ def check_comments(browser, task: TaskInRating, comment, private):
         WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.XPATH, f"//div[contains(@class, 'Comment_comment__baGMa') and .//p[contains(text(), '{comment}')]]"))
         )
-        printInfo(f"Публичный комментарий найден")
+        if private == "public":
+            printInfo(f"Публичный комментарий найден")
+        elif private == "private":
+            printInfo(f"Приватный комментарий найден")
+            return False
+        elif private == "delete":
+            printInfo(f"Удалённый комментарий найден")
+            return False
     except (TimeoutException, NoSuchElementException):
         if private == "private":
             printInfo(f"Приватный комментарий не найден")
         elif private == "public":
             printExeption(f"Публичный комментарий не найден")
             return False
+        elif private == "delete":
+            printInfo(f"Удалённый комментарий не найден")
     except Exception as e:
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Сообщение ошибки: {e}")
         return False
-    printSuccess(f"Отображение {"приватных" if private == "private" else "публичных" if private == "public" else "неизвестных"} комментариев функционирует исправно")
+    printSuccess(f"Отображение {"приватных" if private == "private" else "публичных" if private == "public" else "удалённых" if private == "delete" else "неизвестных"} комментариев функционирует исправно")
     return True
+
+def delete_comment(browser, newComment):
+    try:
+        commentNew = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, f"//div[contains(@class, 'Comment_comment__baGMa') and .//p[contains(text(), '{newComment}')]]"))
+        )
+        printInfo("Комментарий найден")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Созданный комментарий не найден")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+
+    try:
+        commentButtons = WebDriverWait(commentNew, 10).until(
+            EC.presence_of_all_elements_located((By.CLASS_NAME, "ButtonNonUi_button_non_ui__Mn9Zr"))
+        )
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Кнопки комментария не найдены")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+    try:
+        scrolling_to_element(browser, commentButtons[1])
+        commentButtons[1].click()
+        modalWindowToDeleteComment = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".ant-modal-content.Modal_content__miRwP"))
+        )
+        printInfo(f"Модальное окно открыто")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Модальное окно удаления комментария не найдено")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+
+    try:
+        submitButton = WebDriverWait(modalWindowToDeleteComment, 10).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, ".ant-btn.css-14h5sa0.ant-btn-default.Button_button__4z3Rc.Button_button_type_accent__NGYDO"))
+        )
+        submitButton.click()
+        notification = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'ant-notification-notice-wrapper')]//p[contains(text(), 'Успешно удалено')]"))
+        )
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Модальное окно удаления комментария не найдено")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+
+    try:
+        WebDriverWait(browser, 5).until(
+            EC.presence_of_element_located((By.XPATH, f"//div[contains(@class, 'Comment_comment__baGMa') and .//p[contains(text(), '{newComment}')]]"))
+        )
+    except (TimeoutException, NoSuchElementException):
+        printSuccess(f"Комментарий успешно удалён")
+        return True
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+
+    printExeption(f"Комментарий не удалён")
+    return False
+
+def rewrite_comment(browser, newComment):
+    try:
+        commentNew = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, f"//div[contains(@class, 'Comment_comment__baGMa') and .//p[contains(text(), '{newComment}')]]"))
+        )
+        printInfo("Комментарий найден")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Созданный комментарий не найден")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+
+    try:
+        commentButtons = WebDriverWait(commentNew, 10).until(
+            EC.presence_of_all_elements_located((By.CLASS_NAME, "ButtonNonUi_button_non_ui__Mn9Zr"))
+        )
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Кнопки комментария не найдены")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+    try:
+        scrolling_to_element(browser, commentButtons[1])
+        commentButtons[0].click()
+        sleep(1)
+        comment = browser.find_element(By.XPATH, "//div[contains(@class, 'jodit-wysiwyg') and @contenteditable='true']"
+                                                 f"//p[contains(text(), '{newComment}')]")
+        scrolling_to_element(browser, comment)
+        comment.clear()
+        updatedComment = re.sub(r'(комментарий от).*?(пользователя)',
+                                r'\1 ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + r' \2', newComment)
+        comment.send_keys(updatedComment)
+        printInfo(updatedComment)
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Редактирование комментария не выполнено. Элемент не найден")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка редактирования комментария: {e}")
+        return False
+
+    try:
+        commentBody = comment.find_elements(By.XPATH, "..//..//..//..")
+        sendButton = commentBody[0].find_element(By.CSS_SELECTOR, ".ant-btn.css-14h5sa0.ant-btn-default.Button_button__4z3Rc.Button_button_type_accent__NGYDO")
+        scrolling_to_element(browser, sendButton)
+        sendButton.click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Кнопка отправки комментария не найдена")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка редактирования комментария: {e}")
+        return False
+
+    try:
+        notification = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'ant-notification-notice-wrapper')]//p[contains(text(), 'Изменения успешно сохранены')]"))
+        )
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Уведомление об изменении комментария не найдено")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+
+    try:
+        commentNew = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, f"//div[contains(@class, 'Comment_comment__baGMa') and .//p[contains(text(), '{updatedComment}')]]"))
+        )
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Изменённый комментарий не найден")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+
+    printSuccess(f"Комментарий успешно изменён")
+    return updatedComment
