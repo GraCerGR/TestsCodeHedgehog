@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+from InvitationLinks import links
 from Postmoderation import postmoderation
 from settings import *
 import unittest
@@ -144,6 +145,10 @@ class TestTeacher(unittest.TestCase):
 
     def test_users(self):
         result = users(self.browser, "test-admin", "Преподаватели", "Teacher")
+        self.assertTrue(result, "Тест не пройден")
+
+    def test_invite_links(self):
+        result = links(self.browser)
         self.assertTrue(result, "Тест не пройден")
 
     def tearDown(self):
