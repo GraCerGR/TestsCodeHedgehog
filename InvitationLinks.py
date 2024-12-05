@@ -12,7 +12,7 @@ from Exeptions import *
 from Comments import scrolling_to_element
 from Users import go_to_the_users_tab
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def links(browser):
     printInfo(f"Начало теста CRUD ссылки-приглашения")
@@ -22,22 +22,41 @@ def links(browser):
 
     if not open_links(browser):
         return False
-    print()
 
-    if not link_creating(browser, "Студент"):
+    link = link_creating(browser, "Студент")
+    if not link:
         return False
     print()
-
-    if not link_creating(browser, "Преподаватель"):
+    if not link_deleting(browser, link):
         return False
+    link = None
     print()
 
-    if not link_creating(browser, "Студент", True):
+    link = link_creating(browser, "Преподаватель")
+    if not link:
         return False
     print()
-
-    if not link_creating(browser, "Преподаватель", False, '2024-12-20 00:00:00'):
+    if not link_deleting(browser, link):
         return False
+    link = None
+    print()
+
+    link = link_creating(browser, "Студент", True)
+    if not link:
+        return False
+    print()
+    if not link_deleting(browser, link):
+        return False
+    link = None
+    print()
+
+    link = link_creating(browser, "Преподаватель", True, date())
+    if not link:
+        return False
+    print()
+    if not link_deleting(browser, link):
+        return False
+    link = None
     print()
 
     return True
@@ -201,5 +220,81 @@ def link_creating(browser, role, individual: bool = False, date: str = None):
         printExeption(f"Ошибка: Ошибка выделения новой строки из всех существующих строк. {e}")
         return False
 
-    printSuccess(f"Ссылка для {'студента' if role == 'Студент' else 'преподавателя' if role == 'Преподаватель' else role}{", индивидуальная" if individual else ""}{", временная" if date else ""} успешно создана: {newLink}")
-    return True
+    printSuccess(f"Ссылка для {'студента' if role == 'Студент' else 'преподавателя' if role == 'Преподаватель' else role}{", индивидуальная" if individual else ""}{f", временная (до {date})" if date else ""} успешно создана: {newLink}")
+    return newLink
+
+def link_deleting(browser, link):
+    try:
+        linkTableCell = WebDriverWait(browser, 5).until(
+            EC.presence_of_element_located((By.XPATH,
+                                                 f"//tr[contains(@class, 'ant-table-row')]//p[contains(@class, 'Paragraph_hidden__oR1JA') and //p[contains(text(), '{link}')]]"))
+        )
+        linkTableString = linkTableCell.find_element(By.XPATH, "..//..//..")
+        td_elements = linkTableString.find_elements(By.TAG_NAME, 'td')
+        deleteButton = td_elements[4].find_element(By.TAG_NAME, 'button')
+        scrolling_to_element(browser, deleteButton)
+        deleteButton.click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Кнопка удаления ссылки не была найдена")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка нажатия кнопки удаления ссылки. {e}")
+        return False
+
+    try:
+        modalWindow = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".ant-modal-content.Modal_content__miRwP"))
+        )
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Модальное окно не было найдено")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: {e}")
+        return False
+
+    try:
+        WebDriverWait(modalWindow, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'Button_button_type_accent__NGYDO') and .//span[text()='Подтвердить']]"))
+        ).click()
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Кнопка создания ссылки не найдена")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка создания ссылки: {e}")
+        return False
+
+    try:
+        notification = WebDriverWait(browser, 15).until(
+            EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'ant-notification-notice-wrapper')]//p[contains(text(), 'Успешно удалено')]"))
+        )
+        sleep(5)
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Уведомление удаления ссылки не найдена")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка поиска уведомления: {e}")
+        return False
+
+    try:
+        WebDriverWait(browser, 2).until(
+            EC.presence_of_element_located((By.XPATH,
+                                                 f"//tr[contains(@class, 'ant-table-row')]//p[contains(@class, 'Paragraph_hidden__oR1JA') and //p[contains(text(), '{link}')]]"))
+        )
+        printExeption("Ссылка снова найдена. Она не удалена")
+        return False
+    except (TimeoutException, NoSuchElementException):
+        printSuccess(f"Ссылка успешно удалена")
+        return True
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка нажатия кнопки удаления ссылки. {e}")
+        return False
+
+def date():
+    futureDate = datetime.now() + timedelta(days=7)
+    formattedDate = futureDate.strftime('%Y-%m-%d %H:%M:%S')
+    return formattedDate

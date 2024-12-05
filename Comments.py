@@ -310,8 +310,11 @@ def comment_maker(browser, protection):
 
 def scrolling_to_element(browser, element):
     window_height = browser.execute_script("return window.innerHeight;")
+    window_width = browser.execute_script("return window.innerWidth;")
     browser.execute_script("arguments[0].scrollIntoView();", element)
+    element_rect = browser.execute_script("return arguments[0].getBoundingClientRect();", element)
     browser.execute_script("window.scrollBy(0, -arguments[0] / 2);", window_height)
+    browser.execute_script("window.scrollBy(-arguments[0], 0);", element_rect['left'] + (element_rect['width'] / 2) - (window_width / 2))
     sleep(0.5)
 
 def create_new_browser_window(SITELINK, USERNAME, PASSWORD, CLASS):
