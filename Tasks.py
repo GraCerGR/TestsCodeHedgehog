@@ -542,7 +542,7 @@ def making_a_solution_of_task(browser, task, solution):
         WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable((By.XPATH, f"//div[contains(text(), '{solution.language}')]"))
         ).click()
-
+        printSuccess("Выбор языка программирования работает")
     except (TimeoutException, NoSuchElementException):
         printExeption(
             f"Ошибка при вводе языка")
@@ -591,7 +591,7 @@ def making_a_solution_of_task(browser, task, solution):
                                             "//div[contains(@class, 'ant-notification-notice-message')]//p[contains(text(), 'Решение успешно отправлено')]"))
         )
         # check_solution_in_queue(browser, timeNow, solution)
-        printSuccess("Решение успешно создано")
+        printSuccess("Решение успешно создано. Отправка решения на проверку функционирует")
         return True
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Уведомление не найдено")
