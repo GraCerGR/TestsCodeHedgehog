@@ -65,7 +65,7 @@ def displaying_a_page_with_rating(browser, role):
 #        table_element = WebDriverWait(browser, 10).until(
 #            EC.presence_of_element_located((By.XPATH, "//tr[contains(@class, 'ant-table-row') and .//a[contains(@class, 'LinkRouter_link_router__UL4Jy RatingTable_cell_link__khXgH')]]"))
 #        )
-        sleep(1)
+        sleep(5)
         if role == 'Teacher':
             table_element = WebDriverWait(browser, 10).until(
                 EC.presence_of_element_located((By.XPATH, "//tr[contains(@class, 'ant-table-row') and .//a[contains(@class, 'LinkRouter_link_router__UL4Jy RatingTable_cell_link__khXgH')]]"))

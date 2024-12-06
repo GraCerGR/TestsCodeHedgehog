@@ -30,8 +30,8 @@ def go_to_the_users_tab(browser):
         queueButton.click()
         printSuccess(f"Переход на страницу 'Пользователи' выполнен")
         return True
-    except Exception:
-        printExeption(f"Ошибка: Кнопка Пользователи не была найдена или не стала доступной.")
+    except Exception as e:
+        printExeption(f"Ошибка: Кнопка Пользователи не была найдена или не стала доступной. {e}")
         return False
 
 # Тест отображения списка пользователей

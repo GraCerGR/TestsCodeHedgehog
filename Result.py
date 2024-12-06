@@ -58,8 +58,8 @@ def go_to_the_result_tab(browser, user):
         WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[2]/div[2]/button[5]"))
         ).click()
-    except Exception:
-        printExeption(f"Ошибка: Кнопка Пользователи не была найдена или не стала доступной.")
+    except Exception as e:
+        printExeption(f"Ошибка: Кнопка Пользователи не была найдена или не стала доступной. {e}")
         return False
 
     try:

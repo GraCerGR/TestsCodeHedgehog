@@ -50,8 +50,11 @@ def go_to_the_queue_tab(browser):
         queueButton.click()
         printSuccess(f"Переход на страницу 'Очередь' выполнен")
         return True
-    except Exception:
-        printExeption(f"Ошибка: Кнопка очереди не была найдена или не стала доступной.")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Кнопка очереди не была найдена или не стала доступной")
+        return False
+    except Exception as e:
+        printExeption(f"Ошибка: Кнопка очереди не была найдена или не стала доступной. {e}")
         return False
 
 # Тест отображения сообщения об отсутствии данных

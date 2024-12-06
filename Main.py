@@ -12,7 +12,6 @@ from Postmoderation import postmoderation
 from settings import *
 import unittest
 
-from Class import *
 from Login import *
 from Post import *
 from Tasks import *
@@ -23,13 +22,12 @@ from Postmoderation import *
 from PostmoderationManagement import *
 from Result import *
 from Comments import *
+from AddingToClass import *
 
 class TestStudent(unittest.TestCase):
 
     def setUp(self):
-        self.browser = webdriver.Chrome()
-        login_to_profile(self.browser,SITELINK, USERNAME, PASSWORD)
-        login_to_class(self.browser, 'test')
+        self.browser = create_new_browser_window(SITELINK, USERNAME, PASSWORD, "test")
 
     def test_posts(self):
         result = posts(self.browser, Post('Тестовый пост',
@@ -88,9 +86,7 @@ class TestStudent(unittest.TestCase):
 class TestTeacher(unittest.TestCase):
 
     def setUp(self):
-        self.browser = webdriver.Chrome()
-        login_to_profile(self.browser,SITELINK, USERNAME, PASSWORD)
-        login_to_class(self.browser, 'Test machine learning class')
+        self.browser = create_new_browser_window(SITELINK, USERNAME, PASSWORD, "Test machine learning class")
 
     def test_rating(self):
         result = rating(self.browser,  "Teacher","Арифметика", "Трофимова Екатерина Дмитриевна")
@@ -151,6 +147,10 @@ class TestTeacher(unittest.TestCase):
         result = links(self.browser)
         self.assertTrue(result, "Тест не пройден")
 
+    def test_adding_to_class(self):
+        result = addingToClass(self.browser, 'Test machine learning class')
+        self.assertTrue(result, "Тест не пройден")
+
     def tearDown(self):
         self.browser.quit()
 
@@ -158,9 +158,7 @@ class TestTeacher(unittest.TestCase):
 class TestStudent_On_Main_Site(unittest.TestCase):
 
     def setUp(self):
-        self.browser = webdriver.Chrome()
-        login_to_profile(self.browser,SITELINK2, USERNAME, PASSWORD)
-        login_to_class(self.browser, 'Программирование(Тестовый класс для Фич)')
+        self.browser = create_new_browser_window(SITELINK2, USERNAME, PASSWORD, "Программирование(Тестовый класс для Фич)")
 
     def test_postmoderation(self):
         result = postmoderation(self.browser, "Нахождение элемента в массиве, который больше своих соседей", "Student")
@@ -180,9 +178,7 @@ class TestStudent_On_Main_Site(unittest.TestCase):
 class TestTeacher_On_Main_Site(unittest.TestCase):
 
     def setUp(self):
-        self.browser = webdriver.Chrome()
-        login_to_profile_without_TSUAccount(self.browser,SITELINK2, USERNAME2, PASSWORD)
-        login_to_class(self.browser, 'Программирование(Тестовый класс для Фич)')
+        self.browser = create_new_browser_window(SITELINK2, USERNAME2, PASSWORD, "Программирование(Тестовый класс для Фич)", False)
 
     def test_postmoderation_management(self):
         result = postmoderation_management(self.browser, "Принято")
@@ -196,13 +192,13 @@ class TestTeacher_On_Main_Site(unittest.TestCase):
     def test_private_comments(self):
         result = comments(self.browser, User("Срибный Григорий Романович", "Студенты"),
                      TaskInRating('Основы программирования (Модуль 1) (модуль 1)', 'Присваивание и арифметика', 'Hello, world!'),
-                       "private")
+                       "private", "Программирование(Тестовый класс для Фич)")
         self.assertTrue(result, "Тест не пройден")
 
     def test_public_comments(self):
         result = comments(self.browser, User("Срибный Григорий Романович", "Студенты"),
                      TaskInRating('Основы программирования (Модуль 1) (модуль 1)', 'Присваивание и арифметика', 'Hello, world!'),
-                       "public")
+                       "public", "Программирование(Тестовый класс для Фич)")
         self.assertTrue(result, "Тест не пройден")
 
     def tearDown(self):

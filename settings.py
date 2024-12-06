@@ -3,3 +3,7 @@ SITELINK2=""
 USERNAME=""
 USERNAME2=""
 PASSWORD=""
+
+# Переменные для приглашения/удаления из класса
+USERNAME_INVENTED_PERSON=""
+PASSWORD_INVENTED_PERSON=""

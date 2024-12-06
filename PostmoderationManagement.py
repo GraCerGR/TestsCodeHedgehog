@@ -737,6 +737,8 @@ def making_a_solution_for_tests(browser):
         printExeption("Ошибка обновления страницы")
         return False
 
+    return True
+
 def update_page(browser):
     # ----------- Поиск кнопки обновления -----------
     try:

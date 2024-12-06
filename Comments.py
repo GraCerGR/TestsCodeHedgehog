@@ -11,7 +11,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from Exeptions import *
 from settings import *
-from Login import *
+from Login import create_new_browser_window
 from Class import *
 from Tasks import go_to_the_tasks_tab
 import time
@@ -29,7 +29,7 @@ class TaskInRating:
         self.sectionName = sectionName
         self.taskName = taskName
 
-def comments(browser, user: User, task, commentPrivate):
+def comments(browser, user: User, task, commentPrivate, classname):
     printInfo(f"Начало теста комментариев")
     if not go_to_the_history_tab(browser, user, task):
         return False
@@ -44,28 +44,28 @@ def comments(browser, user: User, task, commentPrivate):
 
     printInfo(
         f"ВНИМАНИЕ! Для выполнения данного теста необходимо указать USERNAME и PASSWORD пользователя '{user.name}'")
-    if not test_comments_in_new_browser_window(task, newComment, commentPrivate):
+    if not test_comments_in_new_browser_window(task, newComment, commentPrivate, classname):
         return False
     print()
 
     newComment = rewrite_comment(browser, newComment)
     if not newComment:
         return False
-    if not test_comments_in_new_browser_window(task, newComment, commentPrivate):
+    if not test_comments_in_new_browser_window(task, newComment, commentPrivate, classname):
         return False
     print()
 
     if not delete_comment(browser, newComment):
         return False
-    if not test_comments_in_new_browser_window(task, newComment, "delete"):
+    if not test_comments_in_new_browser_window(task, newComment, "delete", classname):
         return False
     print()
 
     return True
 
-def test_comments_in_new_browser_window(task, comment, commentPrivate):
+def test_comments_in_new_browser_window(task, comment, commentPrivate, classname):
 
-    browser = create_new_browser_window(SITELINK2, USERNAME, PASSWORD, 'Программирование(Тестовый класс для Фич)')
+    browser = create_new_browser_window(SITELINK2, USERNAME, PASSWORD, classname)
     if not browser:
         return False
 
@@ -233,6 +233,7 @@ def go_to_the_history_tab(browser, user, task):
     printSuccess(f"Переход на страницу с историей решений задачи выполнен")
     return True
 
+# Создание комментария
 def comment_maker(browser, protection):
     try:
         userNameClass = WebDriverWait(browser, 10).until(
@@ -317,18 +318,6 @@ def scrolling_to_element(browser, element):
     browser.execute_script("window.scrollBy(-arguments[0], 0);", element_rect['left'] + (element_rect['width'] / 2) - (window_width / 2))
     sleep(0.5)
 
-def create_new_browser_window(SITELINK, USERNAME, PASSWORD, CLASS):
-    try:
-        browser = webdriver.Chrome()
-        login_to_profile(browser, SITELINK, USERNAME, PASSWORD)
-        login_to_class(browser, CLASS)
-        printSuccess("Открытие нового окна браузера выполнено успешно")
-        return browser
-    except Exception as e:
-        printExeption(f"Тип ошибки: {type(e).__name__}")
-        printExeption(f"Ошибка открытия нового окна пользователя: {e}")
-        return False
-
 def search_by_task_name(browser, task: TaskInRating):
     try:
         searchButton = WebDriverWait(browser, 10).until(
@@ -378,7 +367,7 @@ def check_comments(browser, task: TaskInRating, comment, private):
         if private == "private":
             if lastCommentCell == comment:
                 printExeption(f"Приватный комментарий отображается в последнем комментарии задачи")
-               # return False
+                return False
             else:
                 printInfo(f"Приватный комментарий не отобразился в последнем комментарии задачи")
                 printInfo(f"Отображаемый комментарий: {lastCommentCell}")
