@@ -65,7 +65,7 @@ def comments(browser, user: User, task, commentPrivate, classname):
 
 def test_comments_in_new_browser_window(task, comment, commentPrivate, classname):
 
-    browser = create_new_browser_window(SITELINK2, USERNAME, PASSWORD, classname)
+    browser = create_new_browser_window(SITELINK2, USERNAME_RECEIVED_COMMENT, PASSWORD_RECEIVED_COMMENT, classname)
     if not browser:
         return False
 

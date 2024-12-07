@@ -4,11 +4,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from Exeptions import *
-from selenium.common.exceptions import TimeoutException, NoSuchElementException, InvalidSelectorException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException, NoSuchAttributeException
 
 
 def create_new_browser_window(SITELINK, USERNAME, PASSWORD, CLASS, TSUACC = True):
     try:
+        print() # Чтобы вывод в консоли был читабельнее
         browser = webdriver.Chrome()
         if TSUACC:
             browser = login_to_profile(browser, SITELINK, USERNAME, PASSWORD)
@@ -23,16 +24,18 @@ def create_new_browser_window(SITELINK, USERNAME, PASSWORD, CLASS, TSUACC = True
     except Exception as e:
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Ошибка открытия нового окна и входа: {e}")
+        browser.quit()
         return False
 
     try:
         browser = login_to_class(browser, CLASS)
         if not browser:
-            browser.quit()
             printExeption(f"Ошибка открытия класса")
             return False
         print()
         return browser
+    except AttributeError:
+        return False
     except Exception as e:
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Ошибка открытия нового окна пользователя: {e}")
@@ -87,6 +90,10 @@ def login_to_class(browser, classname):
         classButton.click()
         printSuccess(f"Вход в класс {classname} успешно выполнен")
         return browser
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Класс {classname} не найден")
+        browser.quit()
+        return False
     except Exception as e:
         printExeption(f"Ошибка входа в класс '{classname}'. {e}")
         browser.quit()

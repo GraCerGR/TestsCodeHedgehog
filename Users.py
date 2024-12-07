@@ -16,7 +16,7 @@ def users(browser, user_name, roleSelector, role):
         return False
     if not displaying_a_page_with_users(browser, role):
         return False
-    if not search_by_user_name(browser, user_name, roleSelector, role):
+    if not search_by_user_name(browser, user_name, roleSelector):
         return False
     return True
 
@@ -116,7 +116,20 @@ def user_role_selector(browser, table, roleSelector, role):
 
 
 # Поиск по имени пользователя
-def search_by_user_name(browser, user_name, roleSelector, role):
+def search_by_user_name(browser, user_name, roleSelector):
+    if not search_by_user_name_without_cleaning_searchfield(browser, user_name, roleSelector):
+        return False
+    if not cleaning_searchfield(browser):
+        return False
+    printSuccess("Поиск работает")
+    return True
+
+
+def search_by_user_name_without_cleaning_searchfield(browser, user_name, roleSelector):
+    if roleSelector == "Student":
+        roleSelector = "Студенты"
+    elif roleSelector == "Teacher":
+        roleSelector = "Преподаватели"
     try:
         selector = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, ".ant-segmented.Segmented_segmented__VNG0y.css-14h5sa0"))
@@ -158,14 +171,9 @@ def search_by_user_name(browser, user_name, roleSelector, role):
             searchButton.send_keys(char)
             time.sleep(0.05)
 
-        if role == "Student":
-            WebDriverWait(browser, 10).until(
-                EC.element_to_be_clickable((By.XPATH, f"//td[div[p[text()='{user_name}']]]"))
-            )
-        else:
-            WebDriverWait(browser, 10).until(
-                EC.element_to_be_clickable((By.XPATH, f"//td[a[p[text()='{user_name}']]]"))
-            )
+        WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((By.XPATH, f"//td[div[p[text()='{user_name}']]] | //td[a[p[text()='{user_name}']]]"))
+        )
         printInfo(f"Пользователь найден")
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Пользователь '{user_name}' не найден.")
@@ -174,7 +182,23 @@ def search_by_user_name(browser, user_name, roleSelector, role):
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
         return False
+    return True
 
+
+# Отчиска поля поиска
+def cleaning_searchfield(browser):
+    try:
+        searchButton = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "/html/body/div/div/div[2]/div[3]/div/div/div[1]/div/div[2]/span/input"))
+        )
+    except (TimeoutException, NoSuchElementException):
+        printExeption(f"Поле ввода поиска не найдено.")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска. {e}")
+        return False
     #нажатие на крестик
     try:
         closeButton = WebDriverWait(browser, 10).until(
@@ -189,7 +213,7 @@ def search_by_user_name(browser, user_name, roleSelector, role):
     #Проверка, что поле поиска отчистилось
     value = searchButton.get_attribute('value')
     if value == '':
-        printSuccess(f"Поиск работает")
+        printInfo(f"Поле поиска отчищено")
         return True
     else:
         printInfo(f"Ошибка: Поле поиска не отчищено")

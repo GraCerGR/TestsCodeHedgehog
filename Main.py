@@ -22,7 +22,7 @@ from Postmoderation import *
 from PostmoderationManagement import *
 from Result import *
 from Comments import *
-from AddingToClass import *
+from AddingToClassAndDeleting import *
 
 class TestStudent(unittest.TestCase):
 
@@ -72,7 +72,7 @@ class TestStudent(unittest.TestCase):
         self.assertTrue(filter1 and filter2 and filter3 and filter4, "Тест не пройден")
 
     def test_users(self):
-        result = users(self.browser, "Срибный Григорий Романович", "Студенты", "Student")
+        result = users(self.browser, "Срибный Григорий Романович", "Student", "Student")
         self.assertTrue(result, "Тест не пройден")
 
     def test_rating(self):
@@ -140,15 +140,15 @@ class TestTeacher(unittest.TestCase):
         self.assertTrue(filter1 and filter2 and filter3 and filter4, "Тест не пройден")
 
     def test_users(self):
-        result = users(self.browser, "test-admin", "Преподаватели", "Teacher")
+        result = users(self.browser, "test-admin", "Teacher", "Teacher")
         self.assertTrue(result, "Тест не пройден")
 
     def test_invite_links(self):
         result = links(self.browser)
         self.assertTrue(result, "Тест не пройден")
 
-    def test_adding_to_class(self):
-        result = addingToClass(self.browser, 'Test machine learning class')
+    def test_adding_and_deleting_from_class(self):
+        result = adding_and_deleting_from_class(self.browser, 'Test machine learning class')
         self.assertTrue(result, "Тест не пройден")
 
     def tearDown(self):
