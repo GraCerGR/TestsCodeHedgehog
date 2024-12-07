@@ -55,9 +55,16 @@ class TestStudent(unittest.TestCase):
 
     def test_tasks_filters(self):
         filter1 = set_t_filter(self.browser, ['Compilation Error'], Task('Найти первые N простых чисел', 123))
+        print()
+        self.browser.refresh()
         filter2 = set_t_filter(self.browser, ['Отклонено'], Task('Найти первые N простых чисел', 123))
+        print()
+        self.browser.refresh()
         filter3 = set_t_filter(self.browser, ['Ожидание вердикта'], Task('2131', 94151))
+        print()
+        self.browser.refresh()
         filter4 = set_t_filter(self.browser, ['Отклонено', 'Compilation Error'], Task('Найти первые N простых чисел', 123))
+        print()
         self.assertTrue(filter1 and filter2 and filter3 and filter4, "Тест не пройден")
 
     def test_queues(self):
@@ -66,9 +73,17 @@ class TestStudent(unittest.TestCase):
 
     def test_queue_filters(self):
         filter1 = set_q_filter(self.browser, ['Compilation Error'], 'Найти первые N простых чисел')
+        print()
+        self.browser.refresh()
         filter2 = set_q_filter(self.browser, ['C++'], 'Найти первые N простых чисел')
+        print()
+        self.browser.refresh()
         filter3 = set_q_filter(self.browser, ['Check Failed'], '2131')
+        print()
+        self.browser.refresh()
         filter4 = set_q_filter(self.browser, ['Арифметика', '42135'], '2131')
+        print()
+        self.browser.refresh()
         self.assertTrue(filter1 and filter2 and filter3 and filter4, "Тест не пройден")
 
     def test_users(self):
@@ -124,9 +139,15 @@ class TestTeacher(unittest.TestCase):
 
     def test_tasks_filters(self):
         filter1 = set_t_filter(self.browser, ['Check Failed'], Task('Найти первые N простых чисел', 123))
+        print()
+        self.browser.refresh()
         filter2 = set_t_filter(self.browser, ['Отклонено'], Task('Найти первые N простых чисел', 123))
-        filter4 = set_t_filter(self.browser, ['Отклонено', 'Check Failed'], Task('Найти первые N простых чисел', 123))
-        self.assertTrue(filter1 and filter2 and filter4, "Тест не пройден")
+        print()
+        self.browser.refresh()
+        filter3 = set_t_filter(self.browser, ['Отклонено', 'Check Failed'], Task('Найти первые N простых чисел', 123))
+        print()
+        self.browser.refresh()
+        self.assertTrue(filter1 and filter2 and filter3, "Тест не пройден")
 
     def test_queues(self):
         result = queues(self.browser, "Найти первые N простых чисел", "Teacher")
@@ -134,9 +155,17 @@ class TestTeacher(unittest.TestCase):
 
     def test_queue_filters(self):
         filter1 = set_q_filter(self.browser, ['Check Failed'], 'Найти первые N простых чисел')
+        print()
+        self.browser.refresh()
         filter2 = set_q_filter(self.browser, ['C++'], '2131')
+        print()
+        self.browser.refresh()
         filter3 = set_q_filter(self.browser, ['Compilation Error'], 'Найти первые N простых чисел')
+        print()
+        self.browser.refresh()
         filter4 = set_q_filter(self.browser, ['Арифметика', '42135'], '2131')
+        print()
+        self.browser.refresh()
         self.assertTrue(filter1 and filter2 and filter3 and filter4, "Тест не пройден")
 
     def test_users(self):
@@ -166,9 +195,17 @@ class TestStudent_On_Main_Site(unittest.TestCase):
 # Задача "Из списка рёбер в список смежности" не находится по полному названию, так как содержит символы &nbsp; Использовать \u00a0
     def test_postmoderation_filters(self):
         filter1 = set_p_filter(self.browser, ['Поиск и сортировка (Модуль 2)', 'Алгоритмы поиска'], 'Нахождение элемента в массиве, который больше своих соседей')
+        print()
+        self.browser.refresh()
         filter2 = set_p_filter(self.browser, ['Графы (Модуль 4)', 'Графы основа'], 'Из списка\u00a0рёбер\u00a0в список смежности\u00a0')
+        print()
+        self.browser.refresh()
         filter3 = set_p_filter(self.browser, ['C# (mono 6.12)'], 'Из списка\u00a0рёбер\u00a0в список смежности\u00a0')
+        print()
+        self.browser.refresh()
         filter4 = set_p_filter(self.browser, ['Python3 (python 3.12)'], 'Нахождение элемента в массиве, который больше своих соседей')
+        print()
+        self.browser.refresh()
         self.assertTrue(filter1 and filter2 and filter3 and filter4, "Тест не пройден")
 
     def tearDown(self):

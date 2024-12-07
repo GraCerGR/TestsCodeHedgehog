@@ -10,6 +10,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from Exeptions import *
 import time
 
+from Comments import scrolling_to_element
 from Queue import go_to_the_queue_tab
 from Tasks import *
 
@@ -48,6 +49,9 @@ def postmoderation(browser, task_name, role):
 # Переход на вкладку "Постмодерация"
 def go_to_the_postmoderation_tab(browser):
     try:
+        WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[2]/div[2]/button[6]"))
+        ).click() # Для обновления фильтрации
         Button = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[2]/div[2]/button[4]"))
         )
@@ -602,7 +606,10 @@ def set_p_filter(browser, filters: list, task_name):
         filtering_section = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/div"))
         )
-        filtering_section.find_element(By.XPATH, "//h3[text()='Фильтрации']")
+        WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/div//h3[text()='Фильтрации']"))
+        )
+
         printInfo(f"Окно фильтрации найдено")
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Окно 'Фильтрации' не найдено.")
@@ -618,8 +625,10 @@ def set_p_filter(browser, filters: list, task_name):
     # Перебор списка фильтров
     for filter in filters:
         try:
-            filtering_section.find_element(By.XPATH,
-                                           f".//p[text()='{filter}' and contains(@class, 'Paragraph_paragraph__vZceR')]").click()
+            filterChek = filtering_section.find_element(By.XPATH,
+                                           f".//p[text()='{filter}' and contains(@class, 'Paragraph_paragraph__vZceR')]")
+            scrolling_to_element(browser,filterChek)
+            filterChek.click()
             sleep(1)
             printInfo(f"Фильтр '{filter}' найден")
         except (TimeoutException, NoSuchElementException):
@@ -654,6 +663,7 @@ def set_p_filter(browser, filters: list, task_name):
         filter_button.click()
         filters_string = ", ".join(filters)
         printSuccess(f"Фильтр(-ы) '{filters_string}' работает(-ют)")
+
         return True
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Кнопка скрытия фильтрации или отключения фильтра не найдена")

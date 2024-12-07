@@ -23,7 +23,7 @@ def adding_and_deleting_from_class(browser, classname):
         return False
     printSuccess("Пользователь был успешно добавлен в класс вручную")
     print()
-    browser.refresh()
+    browser.refresh() # Для обновления списка пользователей в классе после добавления нового пользователя
     if not deleting_user_from_class(browser, USERNAME_INVENTED_PERSON, ROLE_INVENTED_PERSON):
         return False
     print()

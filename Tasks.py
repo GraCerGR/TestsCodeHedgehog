@@ -60,6 +60,9 @@ def tasks(browser, module):
 # Переход на вкладку "Задачи"
 def go_to_the_tasks_tab(browser):
     try:
+        WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[2]/div[2]/button[6]"))
+        ).click() # Для обновления фильтрации
         taskButton = WebDriverWait(browser, 10).until(
             EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[2]/div[2]/button[2]"))
         )
@@ -206,8 +209,9 @@ def set_t_filter(browser, filters: list, task: Task):
         filtering_section = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/div"))
         )
-        filtering_section.find_element(By.XPATH, "//h3[text()='Фильтрации']")
-        printInfo(f"Окно фильтрации найдено")
+        WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, "/html/body/div[2]/div/div[2]/div/div[2]/div//h3[text()='Фильтрации']"))
+        )
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Окно 'Фильтрации' не найдено.")
         return False
@@ -219,8 +223,10 @@ def set_t_filter(browser, filters: list, task: Task):
     # Перебор списка фильтров
     for filter in filters:
         try:
-            filtering_section.find_element(By.XPATH, f".//p[text()='{filter}' and contains(@class, 'Paragraph_paragraph__vZceR')]").click()
-            printInfo(f"Фильтр '{filter}' найден")
+            filterChek = filtering_section.find_element(By.XPATH,
+                                           f".//p[text()='{filter}' and contains(@class, 'Paragraph_paragraph__vZceR')]")
+            scrolling_to_element(browser,filterChek)
+            filterChek.click()
             sleep(1)
         except (TimeoutException, NoSuchElementException):
             printExeption(f"Фильтр '{filter}' не найден.")
@@ -253,6 +259,7 @@ def set_t_filter(browser, filters: list, task: Task):
         filter_button.click()
         filters_string = ", ".join(filters)
         printSuccess(f"Фильтр(-ы) '{filters_string}' работает(-ют)")
+
         return True
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Кнопка скрытия фильтрации или отключения фильтра не найдена")
@@ -661,3 +668,13 @@ def check_solution_in_queue(browser, timeNow, solution):
         # Выводим тип ошибки и сообщение
         printExeption(f"Тип ошибки: {type(e).__name__}")
         printExeption(f"Сообщение ошибки: {e}")
+
+
+def scrolling_to_element(browser, element):
+    window_height = browser.execute_script("return window.innerHeight;")
+    window_width = browser.execute_script("return window.innerWidth;")
+    browser.execute_script("arguments[0].scrollIntoView();", element)
+    element_rect = browser.execute_script("return arguments[0].getBoundingClientRect();", element)
+    browser.execute_script("window.scrollBy(0, -arguments[0] / 2);", window_height)
+    browser.execute_script("window.scrollBy(-arguments[0], 0);", element_rect['left'] + (element_rect['width'] / 2) - (window_width / 2))
+    sleep(0.5)
