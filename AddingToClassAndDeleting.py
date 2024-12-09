@@ -7,11 +7,12 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException,
 from Exeptions import *
 from Main import create_new_browser_window
 from Users import go_to_the_users_tab, search_by_user_name_without_cleaning_searchfield
+from InvitationLinks import link_creating, open_links
 from time import sleep
 from settings import *
 
 def adding_and_deleting_from_class(browser, classname):
-    printInfo(f"Начало теста добавления в гугл класс")
+    printInfo(f"Начало теста добавления/удаления из гугл класса")
     if not go_to_the_users_tab(browser):
         return False
     print()
@@ -19,24 +20,38 @@ def adding_and_deleting_from_class(browser, classname):
     if not manually_adding_users(browser, EMAIL_INVENTED_PERSON):
         return False
     print()
-    if not test_addingToClass_in_new_browser_window(classname):
+    if not adding_and_deleting_from_class_in_new_browser_window(SITELINK, classname):
         return False
     printSuccess("Пользователь был успешно добавлен в класс вручную")
     print()
+
     browser.refresh() # Для обновления списка пользователей в классе после добавления нового пользователя
+
     if not deleting_user_from_class(browser, USERNAME_INVENTED_PERSON, ROLE_INVENTED_PERSON):
         return False
     print()
-    if test_addingToClass_in_new_browser_window(classname):
+    if adding_and_deleting_from_class_in_new_browser_window(SITELINK, classname):
         return False
     printSuccess("Пользователь был успешно удалён из класса")
     print()
+
+    if not open_links(browser):
+        return False
+    link = link_creating(browser, "Студент")
+    if not link:
+        return False
+    print()
+    if not adding_and_deleting_from_class_in_new_browser_window(link, classname):
+        return False
+    printSuccess("Пользователь был успешно добавлен в класс по ссылке")
+
     return True
 
 
-def test_addingToClass_in_new_browser_window(classname):
 
-    browser = create_new_browser_window(SITELINK, EMAIL_INVENTED_PERSON, PASSWORD_INVENTED_PERSON, classname, False)
+def adding_and_deleting_from_class_in_new_browser_window(sitelink, classname):
+
+    browser = create_new_browser_window(sitelink, EMAIL_INVENTED_PERSON, PASSWORD_INVENTED_PERSON, classname, False)
     if not browser:
         return False
     print()
@@ -127,6 +142,7 @@ def manually_adding_users(browser, email):
     printSuccess("Пользователь успешно приглашён (со стороны приглашающего)")
     return True
 
+# Удаление пользователя из класса
 def deleting_user_from_class(browser, username, roleWasDeleting):
     if not search_by_user_name_without_cleaning_searchfield(browser, username, roleWasDeleting):
         return False
