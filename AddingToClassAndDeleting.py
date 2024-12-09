@@ -8,10 +8,11 @@ from Exeptions import *
 from Main import create_new_browser_window
 from Users import go_to_the_users_tab, search_by_user_name_without_cleaning_searchfield
 from InvitationLinks import link_creating, open_links
+from Tasks import Section, go_to_the_tasks_tab
 from time import sleep
 from settings import *
 
-def adding_and_deleting_from_class(browser, classname):
+def adding_and_deleting_from_class(browser, classname, taskInSection):
     printInfo(f"Начало теста добавления/удаления из гугл класса")
     if not go_to_the_users_tab(browser):
         return False
@@ -20,7 +21,7 @@ def adding_and_deleting_from_class(browser, classname):
     if not manually_adding_users(browser, EMAIL_INVENTED_PERSON):
         return False
     print()
-    if not adding_and_deleting_from_class_in_new_browser_window(SITELINK, classname):
+    if not adding_and_deleting_from_class_in_new_browser_window(SITELINK, classname, taskInSection):
         return False
     printSuccess("Пользователь был успешно добавлен в класс вручную")
     print()
@@ -35,13 +36,14 @@ def adding_and_deleting_from_class(browser, classname):
     printSuccess("Пользователь был успешно удалён из класса")
     print()
 
+
     if not open_links(browser):
         return False
-    link = link_creating(browser, "Студент")
+    link = link_creating(browser, ROLE_INVENTED_PERSON, True)
     if not link:
         return False
     print()
-    if not adding_and_deleting_from_class_in_new_browser_window(link, classname):
+    if not adding_and_deleting_from_class_in_new_browser_window(link, classname, taskInSection):
         return False
     printSuccess("Пользователь был успешно добавлен в класс по ссылке")
 
@@ -49,14 +51,27 @@ def adding_and_deleting_from_class(browser, classname):
 
 
 
-def adding_and_deleting_from_class_in_new_browser_window(sitelink, classname):
+def adding_and_deleting_from_class_in_new_browser_window(sitelink, classname, taskInSection: Section = None):
 
     browser = create_new_browser_window(sitelink, EMAIL_INVENTED_PERSON, PASSWORD_INVENTED_PERSON, classname, False)
     if not browser:
         return False
     print()
 
+    if Section:
+        if not return_in_class_with_progress(browser, taskInSection):
+            return False
+
     browser.quit()
+    return True
+
+def return_in_class_with_progress(browser, section):
+    if not go_to_the_tasks_tab(browser):
+        return False
+    if not viewing_task_details(browser, section):
+        browser.quit()
+        return False
+    printSuccess("Возвращение в тот же класс с сохранением прогресса работает")
     return True
 
 
@@ -200,6 +215,73 @@ def deleting_user_from_class(browser, username, roleWasDeleting):
     printSuccess("Пользователь успешно удалён (со стороны приглашающего)")
     return True
 
+
+def viewing_task_details(browser, section):
+    solution = 0 # переменная для определения выполнения теста страницы последнего решения
+    # Поиск задачи
+    try:
+        searchButton = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "/html/body/div/div/div[2]/div[3]/form/div/div[1]/div/div[2]/div[1]/span/input"))
+        )
+
+        # При быстром вводе предыдующие символы не успевают отобразиться (в поисковике остаётся только последний символ)
+        # searchButton.send_keys(section.task.name)
+        # Поэтому посимвольный ввод
+        for char in section.task.name:
+            searchButton.send_keys(char)
+            time.sleep(0.05)
+
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+    try:
+        taskButton = WebDriverWait(browser, 10).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, f"//button[contains(@class, 'SectionStructure_section_structure_button__ZU4zy') and "
+                           f".//p[text()='{section.name}'] and "
+                           f".//following::p[text()='{section.task.name}'] and "
+                           f".//following::p[text()='{section.task.points}']]"))
+        )
+        printInfo(f"Задача найдена")
+
+    # Вход в описание задачи
+        browser.execute_script("arguments[0].scrollIntoView();", taskButton)
+        taskButton.find_element(By.XPATH, f".//following::p[text()='{section.task.name}']").click()
+        printInfo(f"Вход в детали задачи '{section.task.name}' выполнен")
+    except (TimeoutException, NoSuchElementException):
+        printExeption(
+            f"Ошибка: Задача '{section.task.name}' в секции {section.name} с баллами '{section.task.points}' не была найдена или не стала доступной.")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
+
+    try:
+        verdict_element = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located(
+                (By.CLASS_NAME, "TaskClassVerdicts_task_class_verdicts_card__ak4r6"))
+        )
+
+        infos = verdict_element.find_elements(By.CLASS_NAME, "Paragraph_paragraph__vZceR")
+        for info in infos:
+            text = info.text
+            if text != "Перейти к моему последнему решению":
+                printInfo(f"Вердикт: {info.text}")
+            else:
+                printSuccess("Предыдущие решения задачи существуют")
+                return True
+
+    except (TimeoutException, NoSuchElementException):
+        printExeption(
+            f"Ошибка: Задача ранее не решалась. Нет вердиктов")
+        return False
+    except Exception as e:
+        printExeption(f"Тип ошибки: {type(e).__name__}")
+        printExeption(f"Ошибка: Ошибка поиска задачи. {e}")
+        return False
 
 
 

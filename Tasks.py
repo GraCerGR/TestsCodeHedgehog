@@ -366,23 +366,7 @@ def viewing_task_details(browser, section):
     browser.back()
     go_to_the_tasks_tab(browser)
     return True
-    """
-    try:
-        back_button = WebDriverWait(browser, 10).until(
-            EC.element_to_be_clickable((
-                By.XPATH, "//button[contains(@class, 'Button_button__4z3Rc') and span[text()='Назад']]"
-            ))
-        )
-        back_button.click()
-    except (TimeoutException, NoSuchElementException):
-        printExeption(f"Элемент 'Назад' не найден.")
-        return False
-    except Exception as e:
-        # Выводим тип ошибки и сообщение
-        printExeption(f"Тип ошибки: {type(e).__name__}")
-        printExeption(f"Выход из деталей задачи не выполнен: {e}")
-    return True
-    """
+
 
 def last_solution(browser, section):
     try:

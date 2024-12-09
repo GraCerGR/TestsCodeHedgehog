@@ -177,7 +177,15 @@ class TestTeacher(unittest.TestCase):
         self.assertTrue(result, "Тест не пройден")
 
     def test_adding_and_deleting_from_class(self):
-        result = adding_and_deleting_from_class(self.browser, 'Test machine learning class')
+        result = adding_and_deleting_from_class(self.browser, 'Test machine learning class', Section(
+                                  'Новая секция 3',
+                                  0,
+                                  1,
+                                  0,
+                                  123,
+                                      Task(
+                                          'Найти первые N простых чисел',
+                                          123)))
         self.assertTrue(result, "Тест не пройден")
 
     def tearDown(self):

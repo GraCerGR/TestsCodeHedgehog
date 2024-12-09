@@ -23,7 +23,7 @@ def links(browser):
     if not open_links(browser):
         return False
 
-    link = link_creating(browser, "Студент")
+    link = link_creating(browser, "Student")
     if not link:
         return False
     print()
@@ -32,7 +32,7 @@ def links(browser):
     link = None
     print()
 
-    link = link_creating(browser, "Преподаватель")
+    link = link_creating(browser, "Teacher")
     if not link:
         return False
     print()
@@ -41,7 +41,7 @@ def links(browser):
     link = None
     print()
 
-    link = link_creating(browser, "Студент", True)
+    link = link_creating(browser, "Student", True)
     if not link:
         return False
     print()
@@ -50,7 +50,7 @@ def links(browser):
     link = None
     print()
 
-    link = link_creating(browser, "Преподаватель", True, date())
+    link = link_creating(browser, "Teacher", True, date())
     if not link:
         return False
     print()
@@ -123,7 +123,7 @@ def link_creating(browser, role, individual: bool = False, date: str = None):
             EC.element_to_be_clickable((By.CLASS_NAME, "Select_select__control__Z4598"))
         ).click()
         WebDriverWait(modalWindow, 10).until(
-            EC.element_to_be_clickable((By.XPATH, f"//div[contains(text(), '{role}')]"))
+            EC.element_to_be_clickable((By.XPATH, f"//div[contains(text(), '{roleFormat(role)}')]"))
         ).click()
     except (TimeoutException, NoSuchElementException):
         printExeption(f"Поле селектора не было найдено")
@@ -220,7 +220,7 @@ def link_creating(browser, role, individual: bool = False, date: str = None):
         printExeption(f"Ошибка: Ошибка выделения новой строки из всех существующих строк. {e}")
         return False
 
-    printSuccess(f"Ссылка для {'студента' if role == 'Студент' else 'преподавателя' if role == 'Преподаватель' else role}{", индивидуальная" if individual else ""}{f", временная (до {date})" if date else ""} успешно создана: {newLink}")
+    printSuccess(f"Ссылка для {'студента' if roleFormat(role) == 'Студент' else 'преподавателя' if roleFormat(role) == 'Преподаватель' else roleFormat(role)}{", индивидуальная" if individual else ""}{f", временная (до {date})" if date else ""} успешно создана: {newLink}")
     return newLink
 
 def link_deleting(browser, link):
@@ -298,3 +298,10 @@ def date():
     futureDate = datetime.now() + timedelta(days=7)
     formattedDate = futureDate.strftime('%Y-%m-%d %H:%M:%S')
     return formattedDate
+
+def roleFormat(role):
+    if role == "Student":
+        role = "Студент"
+    elif role == "Teacher":
+        role = "Преподаватель"
+    return role
